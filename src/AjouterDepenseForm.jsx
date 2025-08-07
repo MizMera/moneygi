@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 function AjouterDepenseForm({ onDepenseAjoutee }) {
   const [montant, setMontant] = useState('');
   const [description, setDescription] = useState('');
-
+  /* */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
