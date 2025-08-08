@@ -18,19 +18,27 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-    background: {
-      default: '#f5f5f5',
-    },
+    mode: 'light',
+    primary: { main: '#6366F1' }, // Indigo
+    secondary: { main: '#22C55E' }, // Green
+    background: { default: '#F7F7FB', paper: '#FFFFFF' },
+    text: { primary: '#0F172A', secondary: '#475569' }
   },
+  shape: { borderRadius: 12 },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: 'Inter, Roboto, Helvetica, Arial, sans-serif',
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 700 },
+    h3: { fontWeight: 700 },
+    button: { textTransform: 'none', fontWeight: 600 }
   },
+  components: {
+    MuiPaper: { styleOverrides: { root: { borderRadius: 16 } } },
+    MuiCard: { styleOverrides: { root: { borderRadius: 16, boxShadow: '0 8px 24px rgba(15,23,42,0.06)' } } },
+    MuiButton: { styleOverrides: { root: { borderRadius: 10, paddingInline: 18, paddingBlock: 10 } } },
+    MuiAppBar: { styleOverrides: { root: { boxShadow: '0 2px 8px rgba(15,23,42,0.06)' } } },
+    MuiTableHead: { styleOverrides: { root: { background: '#F1F5F9' } } },
+  }
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -49,13 +57,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="admin" element={<AdminSecurite />} />
           </Route>
         </Routes>
-        <ToastContainer
-          position="bottom-right"
-          autoClose={4000}
-          hideProgressBar={false}
-          closeOnClick
-          pauseOnHover
-        />
+        <ToastContainer position="bottom-right" autoClose={3500} hideProgressBar theme="colored" />
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>,

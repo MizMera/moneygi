@@ -18,7 +18,9 @@ import {
   ListItemText,
   Avatar,
   Menu,
-  MenuItem
+  MenuItem,
+  InputBase,
+  Badge
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -28,7 +30,8 @@ import {
   AccountCircle,
   Logout,
   Menu as MenuIcon,
-  Settings // Ajoutez cette ligne
+  Search,
+  NotificationsNone
 } from '@mui/icons-material';
 
 const drawerWidth = 240;
@@ -117,36 +120,57 @@ function Layout() {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          backgroundColor: 'white',
-          color: 'black',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          backgroundColor: 'background.paper',
+          color: 'text.primary',
+          boxShadow: '0 2px 8px rgba(15,23,42,0.06)'
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ gap: 2 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 1, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
-          <IconButton
-            size="large"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={(e) => setAnchorEl(e.currentTarget)}
-            color="inherit"
-          >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: '#1976d2' }}>
-              {user?.email?.charAt(0).toUpperCase()}
-            </Avatar>
-          </IconButton>
+
+          {/* Search */}
+          <Box sx={{
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#F1F5F9',
+            borderRadius: 2,
+            px: 2,
+            py: 0.5,
+            maxWidth: 520
+          }}>
+            <Search sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
+            <InputBase placeholder="Rechercher..." fullWidth sx={{ fontSize: 14 }} />
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton color="inherit">
+              <Badge color="secondary" variant="dot">
+                <NotificationsNone />
+              </Badge>
+            </IconButton>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              color="inherit"
+            >
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                {user?.email?.charAt(0).toUpperCase()}
+              </Avatar>
+            </IconButton>
+          </Box>
+
           <Menu
             id="menu-appbar"
             anchorEl={anchorEl}
@@ -167,7 +191,7 @@ function Layout() {
           </Menu>
         </Toolbar>
       </AppBar>
-      
+
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -195,15 +219,15 @@ function Layout() {
           {drawer}
         </Drawer>
       </Box>
-      
+
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           mt: 8,
-          backgroundColor: '#f5f5f5',
+          backgroundColor: 'background.default',
           minHeight: 'calc(100vh - 64px)'
         }}
       >

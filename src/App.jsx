@@ -1,15 +1,14 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { Link } from 'react-router-dom'; // Importer Link
-import AjouterProduitForm from './AjouterProduitForm'; // Importer le formulaire
+import AjouterProduitForm from './AjouterProduitForm';
 import './App.css';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 
 function App() {
   const [inventaire, setInventaire] = useState([]);
   const [chargement, setChargement] = useState(true);
 
-  // Nous extrayons la logique de récupération des données pour pouvoir l'appeler à nouveau
   const getInventaire = async () => {
     try {
       setChargement(true);
@@ -27,52 +26,47 @@ function App() {
     getInventaire();
   }, []);
 
-  // La fonction `onProduitAjoute` appelle simplement `getInventaire`
   const handleProduitAjoute = () => {
     getInventaire();
   };
 
   return (
-    <div className="app-container">
-       <nav>
-        <Link to="/">Gestion de l'Inventaire</Link> | <Link to="/pdv">Point de Vente (PDV)</Link> | <Link to="/reparations">Réparations</Link> | <Link to="/dashboard">Tableau de Bord</Link>
+    <Box className="container">
+      <Typography variant="h4" sx={{ fontWeight: 800, mb: 3 }}>Gestion de l'Inventaire</Typography>
 
-      </nav>
-      <hr />
-      
-      <AjouterProduitForm onProduitAjoute={handleProduitAjoute} />
-      
-      <hr />
+      <Box sx={{ mb: 3 }}>
+        <AjouterProduitForm onProduitAjoute={handleProduitAjoute} />
+      </Box>
 
-      <h1>Gestion de l'Inventaire</h1>
-      {chargement ? (
-        <div>Chargement...</div>
-      ) : (
-        <table>
-          {/* ... le reste de votre tableau ... */}
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>SKU</th>
-              <th>Stock</th>
-              <th>Prix de Vente</th>
-              <th>Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventaire.map((produit) => (
-              <tr key={produit.id}>
-                <td>{produit.nom}</td>
-                <td>{produit.sku}</td>
-                <td>{produit.quantite_stock}</td>
-                <td>{produit.prix_vente.toFixed(2)} €</td>
-                <td>{produit.type_article}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+      <Paper sx={{ p: 2, boxShadow: '0 8px 24px rgba(15,23,42,0.06)' }}>
+        {chargement ? (
+          <Typography>Chargement...</Typography>
+        ) : (
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nom</TableCell>
+                <TableCell>SKU</TableCell>
+                <TableCell>Stock</TableCell>
+                <TableCell>Prix de Vente</TableCell>
+                <TableCell>Type</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {inventaire.map((produit) => (
+                <TableRow key={produit.id} hover>
+                  <TableCell>{produit.nom}</TableCell>
+                  <TableCell>{produit.sku || '—'}</TableCell>
+                  <TableCell>{produit.quantite_stock}</TableCell>
+                  <TableCell>{Number(produit.prix_vente || 0).toFixed(2)} €</TableCell>
+                  <TableCell>{produit.type_article}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Paper>
+    </Box>
   );
 }
 
