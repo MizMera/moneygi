@@ -69,51 +69,63 @@ function GestionRoles() {
   }
 
   return (
-    <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>Gérer les Utilisateurs</Typography>
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Email</TableCell>
-              <TableCell>ID Utilisateur</TableCell>
-              <TableCell>Créé le</TableCell>
-              <TableCell>Dernière connexion</TableCell>
-              <TableCell>Rôle</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.length === 0 ? (
+    <Box 
+      sx={{ 
+        height: 'calc(100vh - 100px)', 
+        display: 'flex', 
+        flexDirection: 'column',
+        gap: 2
+      }}
+    >
+      <Typography variant="h4" sx={{ fontWeight: 800 }}>Gestion des Utilisateurs</Typography>
+      
+      <Paper sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+          <Table size="small" stickyHeader>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={5} align="center">Aucun utilisateur</TableCell>
+                <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Email</TableCell>
+                <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>ID Utilisateur</TableCell>
+                <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Créé le</TableCell>
+                <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Dernière connexion</TableCell>
+                <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Rôle</TableCell>
               </TableRow>
-            ) : (
-              users.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.email || '—'}</TableCell>
-                  <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{user.id}</TableCell>
-                  <TableCell>{user.created_at ? new Date(user.created_at).toLocaleString('fr-FR') : '—'}</TableCell>
-                  <TableCell>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('fr-FR') : '—'}</TableCell>
-                  <TableCell>
-                    <FormControl size="small" sx={{ minWidth: 140 }}>
-                      <InputLabel id={`role-label-${user.id}`}>Rôle</InputLabel>
-                      <Select
-                        labelId={`role-label-${user.id}`}
-                        label="Rôle"
-                        value={user.role || 'visiteur'}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      >
-                        <MenuItem value="visiteur">Visiteur</MenuItem>
-                        <MenuItem value="technicien">Technicien</MenuItem>
-                        <MenuItem value="admin">Admin</MenuItem>
-                      </Select>
-                    </FormControl>
+            </TableHead>
+            <TableBody>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <Typography color="text.secondary">Aucun utilisateur trouvé</Typography>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                users.map(user => (
+                  <TableRow key={user.id} hover>
+                    <TableCell>{user.email || '—'}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{user.id}</TableCell>
+                    <TableCell>{user.created_at ? new Date(user.created_at).toLocaleString('fr-FR') : '—'}</TableCell>
+                    <TableCell>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('fr-FR') : '—'}</TableCell>
+                    <TableCell>
+                      <FormControl size="small" sx={{ minWidth: 140 }}>
+                        <InputLabel id={`role-label-${user.id}`}>Rôle</InputLabel>
+                        <Select
+                          labelId={`role-label-${user.id}`}
+                          label="Rôle"
+                          value={user.role || 'visiteur'}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        >
+                          <MenuItem value="visiteur">Visiteur</MenuItem>
+                          <MenuItem value="technicien">Technicien</MenuItem>
+                          <MenuItem value="admin">Admin</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Box>
       </Paper>
     </Box>
   );

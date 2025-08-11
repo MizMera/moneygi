@@ -1,7 +1,7 @@
 // src/AdminSecurite.jsx
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { Typography, Box, CircularProgress, Paper, Divider } from '@mui/material';
+import { Typography, Box, CircularProgress, Paper, Divider, Card, Alert } from '@mui/material';
 
 // Nous allons créer ces composants juste après
 import GestionInvitations from './GestionInvitations';
@@ -32,32 +32,64 @@ function AdminSecurite() {
   }, []);
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <Box sx={{ 
+        height: 'calc(100vh - 100px)', 
+        display: 'flex', 
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ 
+      height: 'calc(100vh - 100px)', 
+      display: 'flex', 
+      flexDirection: 'column',
+      gap: 2
+    }}>
+      <Typography variant="h4" sx={{ fontWeight: 800 }}>
         Administration & Sécurité
       </Typography>
 
-      {/* SECTION VISIBLE PAR TOUS */}
-      <StatutUtilisateurActuel />
-      <Divider sx={{ marginY: 4 }} />
+      <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {/* SECTION VISIBLE PAR TOUS */}
+        <Card sx={{ p: 3 }}>
+          <StatutUtilisateurActuel />
+        </Card>
 
-      {/* SECTION VISIBLE UNIQUEMENT PAR LES ADMINS */}
-      {profil?.role === 'admin' ? (
-        <Paper elevation={3} sx={{ padding: 2 }}>
-          <Typography variant="h5" color="secondary" gutterBottom>
-            Panneau d'Administration
-          </Typography>
-          <GestionInvitations />
-          <Divider sx={{ marginY: 3 }} />
-          <GestionRoles />
-        </Paper>
-      ) : (
-        <Typography>Vous n'avez pas les droits nécessaires pour accéder au panneau d'administration.</Typography>
-      )}
+        {/* SECTION VISIBLE UNIQUEMENT PAR LES ADMINS */}
+        {profil?.role === 'admin' ? (
+          <Card sx={{ p: 3, flexGrow: 1 }}>
+            <Typography variant="h5" color="primary" sx={{ mb: 3, fontWeight: 600 }}>
+              Panneau d'Administration
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Paper sx={{ p: 3, bgcolor: 'background.default' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                  Gestion des Invitations
+                </Typography>
+                <GestionInvitations />
+              </Paper>
+              
+              <Paper sx={{ p: 3, bgcolor: 'background.default', flexGrow: 1 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                  Gestion des Rôles
+                </Typography>
+                <GestionRoles />
+              </Paper>
+            </Box>
+          </Card>
+        ) : (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            Vous n'avez pas les droits nécessaires pour accéder au panneau d'administration.
+          </Alert>
+        )}
+      </Box>
     </Box>
   );
 }

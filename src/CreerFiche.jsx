@@ -8,6 +8,18 @@ import { supabase } from './supabaseClient';
 import { useNavigate } from 'react-router-dom';
 // Import toast notifications for user feedback
 import { toast } from 'react-toastify';
+// Import Material-UI components
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Divider
+} from '@mui/material';
+import { Save as SaveIcon, ArrowBack as ArrowBackIcon, Close as CloseIcon } from '@mui/icons-material';
 
 function CreerFiche() {
   // State to store the client's name input
@@ -67,50 +79,112 @@ function CreerFiche() {
 
   // Render the form for creating a new repair ticket
   return (
-    <form onSubmit={handleSubmit} className="fiche-form"> {/* Form with submit handler and CSS class */}
-      <h2>Créer une Nouvelle Fiche de Réparation</h2> {/* Main heading */}
-      
-      <fieldset> {/* Group related client information fields */}
-        <legend>Informations Client</legend> {/* Fieldset title */}
-        {/* Input for client name - controlled component with state */}
-        <input 
-          type="text" 
-          value={nomClient} 
-          onChange={e => setNomClient(e.target.value)} 
-          placeholder="Nom du client" 
-          required 
-        />
-        {/* Input for client phone - tel type for mobile keyboards */}
-        <input 
-          type="tel" 
-          value={telClient} 
-          onChange={e => setTelClient(e.target.value)} 
-          placeholder="Téléphone" 
-        />
-      </fieldset>
-      
-      <fieldset> {/* Group related device information fields */}
-        <legend>Informations Appareil</legend> {/* Fieldset title */}
-        {/* Input for device description - controlled component */}
-        <input 
-          type="text" 
-          value={appareil} 
-          onChange={e => setAppareil(e.target.value)} 
-          placeholder="Description (ex: PC HP Pavilion G7)" 
-          required 
-        />
-        {/* Textarea for problem description - larger input area */}
-        <textarea 
-          value={probleme} 
-          onChange={e => setProbleme(e.target.value)} 
-          placeholder="Problème signalé par le client" 
-          required 
-        />
-      </fieldset>
+    <Box sx={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Header */}
+      <Box sx={{ flexShrink: 0 }}>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Button 
+            variant="outlined" 
+            startIcon={<ArrowBackIcon />} 
+            onClick={() => navigate('/reparations')}
+            size="small"
+          >
+            Retour
+          </Button>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>
+            Créer une Nouvelle Fiche de Réparation
+          </Typography>
+        </Stack>
+      </Box>
 
-      {/* Submit button to create the repair ticket */}
-      <button type="submit">Enregistrer la Fiche</button>
-    </form>
+      {/* Form Card */}
+      <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Client Information Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                Informations Client
+              </Typography>
+              <Stack spacing={2}>
+                <TextField 
+                  label="Nom du client"
+                  value={nomClient} 
+                  onChange={e => setNomClient(e.target.value)} 
+                  required
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField 
+                  label="Téléphone"
+                  type="tel"
+                  value={telClient} 
+                  onChange={e => setTelClient(e.target.value)} 
+                  fullWidth
+                  variant="outlined"
+                />
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            {/* Device Information Section */}
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                Informations Appareil
+              </Typography>
+              <Stack spacing={2} sx={{ flex: 1 }}>
+                <TextField 
+                  label="Description de l'appareil"
+                  value={appareil} 
+                  onChange={e => setAppareil(e.target.value)} 
+                  placeholder="ex: PC HP Pavilion G7, iPhone 12, Samsung Galaxy S21..."
+                  required
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField 
+                  label="Problème signalé par le client"
+                  value={probleme} 
+                  onChange={e => setProbleme(e.target.value)} 
+                  placeholder="Décrivez le problème en détail..."
+                  required
+                  fullWidth
+                  multiline
+                  rows={6}
+                  variant="outlined"
+                  sx={{ flex: 1 }}
+                />
+              </Stack>
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ flexShrink: 0, pt: 2 }}>
+              <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+                <Button 
+                  variant="text" 
+                  onClick={() => navigate('/reparations')}
+                  size="small"
+                  color="inherit"
+                  startIcon={<CloseIcon />}
+                >
+                  Annuler
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  startIcon={<SaveIcon />}
+                  size="small"
+                  disableElevation
+                >
+                  Enregistrer la Fiche
+                </Button>
+              </Stack>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 

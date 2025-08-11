@@ -34,13 +34,17 @@ import {
   NotificationsNone
 } from '@mui/icons-material';
 
-const drawerWidth = 240;
+// widths for mini-variant drawer
+const drawerWidth = 260; // expanded width
+const collapsedWidth = 72; // icon-only width
 
 const menuItems = [
   { text: 'Tableau de Bord', path: '/dashboard', icon: <DashboardIcon /> },
   { text: 'Inventaire', path: '/', icon: <InventoryIcon /> },
   { text: 'Point de Vente', path: '/pdv', icon: <POSIcon /> },
   { text: 'Réparations', path: '/reparations', icon: <RepairIcon /> },
+  { text: 'Historique Encaisse', path: '/historique-encaisse', icon: <POSIcon /> },
+  { text: 'Clôture Caisse', path: '/cloture-caisse', icon: <POSIcon /> },
   { text: 'Administration', path: '/admin', icon: <AccountCircle /> }
 ];
 
@@ -83,11 +87,11 @@ function Layout() {
   const drawer = (
     <div>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+        <Typography className="app-title" variant="h6" noWrap component="div" sx={{ color: '#E5E7EB', fontWeight: '800' }}>
           Clear Management
         </Typography>
       </Toolbar>
-      <Divider />
+      <Divider sx={{ borderColor: 'rgba(148,163,184,0.12)' }} />
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
@@ -97,14 +101,14 @@ function Layout() {
               selected={location.pathname === item.path}
               sx={{
                 '&.Mui-selected': {
-                  backgroundColor: '#e3f2fd',
-                  borderRight: '3px solid #1976d2',
-                  '& .MuiListItemIcon-root': { color: '#1976d2' },
-                  '& .MuiListItemText-primary': { color: '#1976d2', fontWeight: 'bold' }
+                  backgroundColor: 'rgba(99,102,241,0.15)',
+                  borderRight: '3px solid #6366F1',
+                  '& .MuiListItemIcon-root': { color: '#A5B4FC' },
+                  '& .MuiListItemText-primary': { color: '#E5E7EB', fontWeight: 'bold' }
                 }
               }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemIcon sx={{ color: 'inherit' }}>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
@@ -118,11 +122,12 @@ function Layout() {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          backgroundColor: 'background.paper',
+          width: { sm: `calc(100% - ${collapsedWidth}px)` },
+          ml: { sm: `${collapsedWidth}px` },
+          backgroundColor: 'rgba(2,6,23,0.6)',
+          backdropFilter: 'blur(8px)',
           color: 'text.primary',
-          boxShadow: '0 2px 8px rgba(15,23,42,0.06)'
+          boxShadow: '0 10px 30px rgba(0,0,0,0.35)'
         }}
       >
         <Toolbar sx={{ gap: 2 }}>
@@ -141,11 +146,12 @@ function Layout() {
             flexGrow: 1,
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#F1F5F9',
+            backgroundColor: 'rgba(148,163,184,0.12)',
             borderRadius: 2,
             px: 2,
             py: 0.5,
-            maxWidth: 520
+            maxWidth: 520,
+            border: '1px solid rgba(148,163,184,0.12)'
           }}>
             <Search sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
             <InputBase placeholder="Rechercher..." fullWidth sx={{ fontSize: 14 }} />
@@ -194,8 +200,9 @@ function Layout() {
 
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { sm: collapsedWidth }, flexShrink: { sm: 0 } }}
       >
+        {/* Mobile drawer */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -208,11 +215,35 @@ function Layout() {
         >
           {drawer}
         </Drawer>
+
+        {/* Desktop mini-variant drawer */}
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+            '& .MuiDrawer-paper': (theme) => ({
+              boxSizing: 'border-box',
+              width: collapsedWidth,
+              overflowX: 'hidden',
+              whiteSpace: 'nowrap',
+              transition: theme.transitions.create('width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.shorter }),
+              backgroundColor: '#0F172A',
+              color: '#E5E7EB',
+              borderRight: '1px solid rgba(148,163,184,0.08)',
+              // center icons and hide labels by default
+              '& .MuiListItemButton-root': { justifyContent: 'center', px: 2 },
+              '& .MuiListItemIcon-root': { minWidth: 0, mr: 0, justifyContent: 'center', color: 'inherit' },
+              '& .MuiListItemText-root': { opacity: 0, width: 0, transition: 'opacity .2s ease, width .2s ease' },
+              '& .app-title': { opacity: 0, width: 0, transition: 'opacity .2s ease, width .2s ease' },
+              // expand on hover
+              '&:hover': {
+                width: drawerWidth,
+              },
+              '&:hover .MuiListItemButton-root': { justifyContent: 'initial', px: 2.5 },
+              '&:hover .MuiListItemIcon-root': { mr: 1.5, justifyContent: 'initial' },
+              '&:hover .MuiListItemText-root': { opacity: 1, width: 'auto' },
+              '&:hover .app-title': { opacity: 1, width: 'auto' },
+            })
           }}
           open
         >
@@ -225,9 +256,9 @@ function Layout() {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: `calc(100% - ${collapsedWidth}px)` },
           mt: 8,
-          backgroundColor: 'background.default',
+          background: 'radial-gradient(1200px 600px at 100% -10%, rgba(99,102,241,0.12), transparent), radial-gradient(800px 400px at -10% 100%, rgba(14,165,233,0.08), transparent), #0B1220',
           minHeight: 'calc(100vh - 64px)'
         }}
       >

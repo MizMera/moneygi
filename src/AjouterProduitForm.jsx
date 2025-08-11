@@ -10,6 +10,7 @@ function AjouterProduitForm({ onProduitAjoute }) {
   const [nom, setNom] = useState('');
   const [sku, setSku] = useState('');
   const [prix_vente, setPrixVente] = useState('');
+  const [prix_achat, setPrixAchat] = useState('');
   const [quantite_stock, setQuantiteStock] = useState('');
   const [type_article, setTypeArticle] = useState('Produit de Vente');
 
@@ -17,11 +18,18 @@ function AjouterProduitForm({ onProduitAjoute }) {
     e.preventDefault();
 
     try {
-      const { data, error } = await supabase
+      const payload = {
+        nom,
+        sku,
+        prix_vente: parseFloat(prix_vente || 0),
+        prix_achat: parseFloat(prix_achat || 0),
+        quantite_stock: parseInt(quantite_stock || 0, 10),
+        type_article
+      };
+
+      const { error } = await supabase
         .from('inventaire')
-        .insert([
-          { nom, sku, prix_vente, quantite_stock, type_article }
-        ]);
+        .insert([payload]);
       
       if (error) throw error;
       
@@ -29,6 +37,7 @@ function AjouterProduitForm({ onProduitAjoute }) {
       setNom('');
       setSku('');
       setPrixVente('');
+      setPrixAchat('');
       setQuantiteStock('');
       setTypeArticle('Produit de Vente');
 
@@ -42,23 +51,15 @@ function AjouterProduitForm({ onProduitAjoute }) {
   };
 
   return (
-    // Box est une sorte de <div> de MUI, très pratique pour les styles
     <Box 
       component="form" 
       onSubmit={handleSubmit} 
       sx={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: 2, 
-        padding: 2, 
-        border: '1px solid #ccc', 
-        borderRadius: '8px',
-        maxWidth: 500,
-        margin: '0 auto'
+        gap: 1.5
       }}
     >
-      <Typography variant="h6">Ajouter un Nouvel Article</Typography>
-      
       <TextField 
         label="Nom du produit" 
         variant="outlined" 
@@ -66,6 +67,7 @@ function AjouterProduitForm({ onProduitAjoute }) {
         onChange={(e) => setNom(e.target.value)} 
         required 
         fullWidth
+        size="small"
       />
       
       <TextField 
@@ -74,8 +76,21 @@ function AjouterProduitForm({ onProduitAjoute }) {
         value={sku} 
         onChange={(e) => setSku(e.target.value)} 
         fullWidth
+        size="small"
       />
       
+      <TextField 
+        label="Prix d'achat (€)" 
+        type="number" 
+        variant="outlined" 
+        value={prix_achat}
+        onChange={(e) => setPrixAchat(e.target.value)} 
+        required 
+        fullWidth
+        inputProps={{ step: "0.01", min: "0" }}
+        size="small"
+      />
+
       <TextField 
         label="Prix de vente (€)" 
         type="number" 
@@ -85,6 +100,7 @@ function AjouterProduitForm({ onProduitAjoute }) {
         required 
         fullWidth
         inputProps={{ step: "0.01", min: "0" }}
+        size="small"
       />
       
       <TextField 
@@ -96,9 +112,10 @@ function AjouterProduitForm({ onProduitAjoute }) {
         required 
         fullWidth
         inputProps={{ min: "0" }}
+        size="small"
       />
       
-      <FormControl fullWidth>
+      <FormControl fullWidth size="small">
         <InputLabel>Type d'article</InputLabel>
         <Select 
           value={type_article} 
@@ -114,7 +131,7 @@ function AjouterProduitForm({ onProduitAjoute }) {
         type="submit" 
         variant="contained" 
         color="primary"
-        size="large"
+        size="small"
         sx={{ mt: 1 }}
       >
         Ajouter à l'inventaire
