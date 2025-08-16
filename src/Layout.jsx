@@ -43,8 +43,9 @@ const menuItems = [
   { text: 'Inventaire', path: '/', icon: <InventoryIcon /> },
   { text: 'Point de Vente', path: '/pdv', icon: <POSIcon /> },
   { text: 'Réparations', path: '/reparations', icon: <RepairIcon /> },
-  { text: 'Historique Encaisse', path: '/historique-encaisse', icon: <POSIcon /> },
-  { text: 'Clôture Caisse', path: '/cloture-caisse', icon: <POSIcon /> },
+  { text: 'Gestion Encaisse', path: '/gestion-encaisse', icon: <POSIcon /> },
+  { text: 'Dépenses', path: '/depenses', icon: <RepairIcon /> },
+  { text: 'Transferts', path: '/transferts', icon: <POSIcon /> },
   { text: 'Administration', path: '/admin', icon: <AccountCircle /> }
 ];
 
@@ -255,14 +256,16 @@ function Layout() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${collapsedWidth}px)` },
           mt: 8,
           background: 'radial-gradient(1200px 600px at 100% -10%, rgba(99,102,241,0.12), transparent), radial-gradient(800px 400px at -10% 100%, rgba(14,165,233,0.08), transparent), #0B1220',
-          minHeight: 'calc(100vh - 64px)'
-        }}
+          minHeight: 'calc(100vh - 64px)',
+          width: '100%',
+          overflowX: 'hidden'
+        }}  
       >
-        <Outlet />
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

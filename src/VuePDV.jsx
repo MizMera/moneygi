@@ -181,17 +181,28 @@ function VuePDV() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      const wallet = modePaiement === 'Espèces' ? 'Caisse' : 'Banque';
 
-      const { error: transactionError } = await supabase
+      // Try insert with wallet + is_internal; fallback without if schema missing
+      const basePayload = {
+        type: 'Revenu',
+        source: `Vente au Détail - ${modePaiement}`,
+        montant: totalVente,
+        cout_total: coutTotalVente,
+        description: `Ticket ${ticketNo} | ${panier.length} ligne(s) | Paiement: ${modePaiement}`,
+        user_id: user?.id || null
+      };
+
+      let { error: transactionError } = await supabase
         .from('transactions')
-        .insert({
-          type: 'Revenu',
-          source: `Vente au Détail - ${modePaiement}`,
-          montant: totalVente,
-          cout_total: coutTotalVente,
-          description: `Ticket ${ticketNo} | ${panier.length} ligne(s) | Paiement: ${modePaiement}`,
-          user_id: user?.id || null
-        });
+        .insert({ ...basePayload, wallet, is_internal: false });
+
+      if (transactionError && String(transactionError.message || '').toLowerCase().includes('column')) {
+        // Fallback if custom columns not present
+        const retry = await supabase.from('transactions').insert(basePayload);
+        transactionError = retry.error;
+      }
+
       if (transactionError) throw transactionError;
 
       // MAJ stock uniquement pour les produits (objets ayant quantite_stock défini)

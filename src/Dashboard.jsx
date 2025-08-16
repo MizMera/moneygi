@@ -14,7 +14,14 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider
+  Divider,
+  LinearProgress,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Stack
 } from '@mui/material';
 import {
   TrendingUp,
@@ -22,18 +29,27 @@ import {
   Euro,
   Build,
   Inventory,
-  PictureAsPdf
+  PictureAsPdf,
+  AccountBalance,
+  Refresh,
+  ShoppingCart,
+  Star,
+  Person,
+  Assignment
 } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 
 function Dashboard() {
@@ -44,7 +60,15 @@ function Dashboard() {
     ventesJour: 0,
     reparationsEnCours: 0,
     stockFaible: 0,
-    coutsJour: 0, // Nouveau
+    coutsJour: 0,
+    // new KPIs
+    caMois: 0,
+    depensesMois: 0,
+    coutsMois: 0,
+    beneficeNetMois: 0,
+    panierMoyenJour: 0,
+    transfertsJourCount: 0,
+    transfertsJourSortants: 0,
   });
   const [graphData, setGraphData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,10 +76,21 @@ function Dashboard() {
   const [recentTx, setRecentTx] = useState([]);
   const [lowStock, setLowStock] = useState([]);
   const [repairCounts, setRepairCounts] = useState({ recus: 0, enCours: 0, termines: 0 });
+  const [walletBalances, setWalletBalances] = useState(null); // {Caisse, Banque, Coffre} or null if unsupported
 
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  const tryExcludeInternal = async (build) => {
+    // build(withFlag:boolean) => PostgrestFilterBuilder
+    let { data, error } = await build(true);
+    if (error && String(error.message || '').toLowerCase().includes('is_internal')) {
+      const retry = await build(false);
+      data = retry.data; error = retry.error;
+    }
+    return { data, error };
+  };
 
   const generateDashboardPDF = async () => {
     const doc = new jsPDF();
@@ -125,83 +160,158 @@ function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const aujourdhui = new Date().toISOString().split('T')[0];
-      const hier = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      const { data: revenusJour } = await supabase
-        .from('transactions')
-        .select('montant')
-        .eq('type', 'Revenu')
-        .gte('created_at', aujourdhui);
-      const { data: revenusHier } = await supabase
-        .from('transactions')
-        .select('montant')
-        .eq('type', 'Revenu')
-        .gte('created_at', hier)
-        .lt('created_at', aujourdhui);
-      const { data: depensesJour } = await supabase
-        .from('transactions')
-        .select('montant')
-        .eq('type', 'Dépense')
-        .gte('created_at', aujourdhui);
-      // Nouveau: récupérer aussi le cout_total des revenus du jour
-      const { data: coutsJour } = await supabase
-        .from('transactions')
-        .select('cout_total')
-        .eq('type', 'Revenu')
-        .gte('created_at', aujourdhui);
-      const { data: reparations } = await supabase
-        .from('fiches_reparation')
-        .select('id, statut')
-        .in('statut', ['Reçu', 'En cours', 'Terminé']);
-      // Detailed low stock list
-      const { data: stockFaibleList } = await supabase
-        .from('inventaire')
-        .select('id, nom, quantite_stock')
-        .lt('quantite_stock', 5)
-        .order('quantite_stock', { ascending: true })
-        .limit(5);
-      // Recent transactions
-      const { data: txRecent } = await supabase
-        .from('transactions')
-        .select('id, type, montant, created_at, description')
-        .order('created_at', { ascending: false })
-        .limit(8);
+      const now = new Date();
+      const aujourdhui = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const hier = new Date(aujourdhui.getTime() - 86400000);
+      const debutMoisDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const aujourdhuiISO = aujourdhui.toISOString().split('T')[0];
+      const hierISO = hier.toISOString().split('T')[0];
+      const debutMoisISO = debutMoisDate.toISOString().split('T')[0];
 
-      const graphique = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
-        const nextDate = new Date(Date.now() - (i - 1) * 86400000).toISOString().split('T')[0];
-        const { data: revenus } = await supabase
+      // Fetch all transactions since start of month (single roundtrip), exclude internal when supported
+      const { data: txAll } = await tryExcludeInternal((withFlag) => {
+        let b = supabase
           .from('transactions')
-          .select('montant')
-          .eq('type', 'Revenu')
-          .gte('created_at', date)
-          .lt('created_at', nextDate);
-        const total = revenus?.reduce((sum, t) => sum + t.montant, 0) || 0;
-        graphique.push({
-          date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short' }),
-          revenus: total
+          .select('id,type,montant,cout_total,created_at,description,is_internal,wallet')
+          .gte('created_at', debutMoisISO)
+          .order('created_at', { ascending: false });
+        return withFlag ? b.neq('is_internal', true) : b;
+      });
+      const tx = txAll || [];
+
+      // Parallel fetch: stock faible and repairs counts
+      const [stockFaibleListRes, reparationsRes] = await Promise.all([
+        supabase
+          .from('inventaire')
+          .select('id, nom, quantite_stock')
+          .lt('quantite_stock', 5)
+          .order('quantite_stock', { ascending: true })
+          .limit(5),
+        supabase
+          .from('fiches_reparation')
+          .select('id, statut')
+          .in('statut', ['Reçu', 'En cours', 'Terminé'])
+      ]);
+      const stockFaibleList = stockFaibleListRes.data || [];
+      const reparations = reparationsRes.data || [];
+
+      // Helpers
+      const isSameDay = (d, base) => {
+        const x = new Date(d);
+        return x.getFullYear() === base.getFullYear() && x.getMonth() === base.getMonth() && x.getDate() === base.getDate();
+      };
+
+      // Split by type and date
+      const revenus = tx.filter(t => t.type === 'Revenu');
+      const depenses = tx.filter(t => t.type === 'Dépense');
+
+      const revenusJour = revenus.filter(t => isSameDay(t.created_at, aujourdhui));
+      const revenusHierArr = revenus.filter(t => isSameDay(t.created_at, hier));
+      const depensesJourArr = depenses.filter(t => isSameDay(t.created_at, aujourdhui));
+      const coutsJourArr = revenusJour; // cout_total lives on revenus
+
+      const sum = (arr, key) => arr.reduce((s, r) => s + Number(r[key] || 0), 0);
+
+      const revenusJourTotal = sum(revenusJour, 'montant');
+      const revenusHierTotal = sum(revenusHierArr, 'montant');
+      const depensesJourTotal = sum(depensesJourArr, 'montant');
+      const coutsJourTotal = sum(coutsJourArr, 'cout_total');
+
+      const caMois = sum(revenus, 'montant');
+      const depensesMois = sum(depenses, 'montant');
+      const coutsMois = sum(revenus, 'cout_total');
+      const beneficeNetMois = caMois - coutsMois - depensesMois;
+
+      const ventesJourCount = revenusJour.length;
+      const panierMoyenJour = ventesJourCount > 0 ? (revenusJourTotal / ventesJourCount) : 0;
+
+      // Recent non-internal tx (already excluded), show latest 8
+      const recentTxLocal = tx.slice(0, 8);
+
+      // Seven-day chart from single dataset
+      const graphDays = [];
+      for (let i = 6; i >= 0; i--) {
+        const day = new Date(aujourdhui.getTime() - i * 86400000);
+        const rev = revenus.filter(t => isSameDay(t.created_at, day));
+        const dep = depenses.filter(t => isSameDay(t.created_at, day));
+        const totalRev = sum(rev, 'montant');
+        const totalDep = sum(dep, 'montant');
+        graphDays.push({
+          date: day.toLocaleDateString('fr-FR', { weekday: 'short' }),
+          revenus: totalRev,
+          depenses: totalDep,
+          net: totalRev - totalDep
         });
       }
 
+      // Transfers today computed client-side from txAll
+      const transfertsToday = tx.filter(t => isSameDay(t.created_at, aujourdhui) && /transfert/i.test(t.description || ''));
+      const transfertsJourCount = transfertsToday.length;
+      const transfertsJourSortants = transfertsToday.filter(t => t.type === 'Dépense').reduce((s, t) => s + Number(t.montant || 0), 0);
+
+      // Wallet balances optimized: include all transaction types and internal transfers
+      let wbData = null;
+      try {
+        const { data: wb, error: werr } = await supabase
+          .from('transactions')
+          .select('type,montant,wallet,description')
+          .in('wallet', ['Caisse','Banque','Coffre']);
+        
+        if (werr) throw werr;
+        const balances = { Caisse: 0, Banque: 0, Coffre: 0 };
+        (wb || []).forEach(r => {
+          const w = r.wallet;
+          const n = Number(r.montant) || 0;
+          const isTransferOut = /transfert.*vers|transfer.*to/i.test(r.description || '');
+          const isTransferIn = /transfert.*de|transfer.*from|reçu.*de/i.test(r.description || '');
+          
+          // Handle different transaction types
+          if (r.type === 'Revenu' || isTransferIn) {
+            balances[w] += n;
+          } else if (r.type === 'Dépense' || isTransferOut) {
+            balances[w] -= n;
+          } else if (r.type === 'Transfert') {
+            // Handle specific transfer type if it exists
+            if (isTransferOut) {
+              balances[w] -= n;
+            } else if (isTransferIn) {
+              balances[w] += n;
+            }
+          }
+        });
+        wbData = balances;
+      } catch (error) {
+        console.error('Error calculating wallet balances:', error);
+        wbData = null;
+      }
+
+      // Set state
       setStats({
-        revenusJour: revenusJour?.reduce((s, t) => s + t.montant, 0) || 0,
-        revenusHier: revenusHier?.reduce((s, t) => s + t.montant, 0) || 0,
-        depensesJour: depensesJour?.reduce((s, t) => s + t.montant, 0) || 0,
-        ventesJour: revenusJour?.length || 0,
-        reparationsEnCours: reparations?.filter(r => r.statut === 'En cours').length || 0,
-        stockFaible: stockFaibleList?.length || 0,
-        coutsJour: coutsJour?.reduce((s, t) => s + (t.cout_total || 0), 0) || 0,
+        revenusJour: revenusJourTotal,
+        revenusHier: revenusHierTotal,
+        depensesJour: depensesJourTotal,
+        ventesJour: ventesJourCount,
+        reparationsEnCours: reparations.filter(r => r.statut === 'En cours').length || 0,
+        stockFaible: stockFaibleList.length || 0,
+        coutsJour: coutsJourTotal,
+        caMois,
+        depensesMois,
+        coutsMois,
+        beneficeNetMois,
+        panierMoyenJour,
+        transfertsJourCount,
+        transfertsJourSortants,
       });
-      setGraphData(graphique);
-      setRecentTx(txRecent || []);
-      setLowStock(stockFaibleList || []);
+      setGraphData(graphDays);
+      setRecentTx(recentTxLocal);
+      setLowStock(stockFaibleList);
       const counts = {
-        recus: reparations?.filter(r => r.statut === 'Reçu').length || 0,
-        enCours: reparations?.filter(r => r.statut === 'En cours').length || 0,
-        termines: reparations?.filter(r => r.statut === 'Terminé').length || 0,
+        recus: reparations.filter(r => r.statut === 'Reçu').length || 0,
+        enCours: reparations.filter(r => r.statut === 'En cours').length || 0,
+        termines: reparations.filter(r => r.statut === 'Terminé').length || 0,
       };
       setRepairCounts(counts);
+      setWalletBalances(wbData);
     } catch (e) {
       console.error(e);
     } finally {
@@ -209,35 +319,108 @@ function Dashboard() {
     }
   };
 
-  const StatCard = ({ title, value, subtitle, icon, color, trend }) => (
-    <Card sx={{ height: '100%', p: 1, boxShadow: '0 6px 18px rgba(99, 102, 241, 0.08)' }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
-            <Typography color="textSecondary" gutterBottom variant="overline" sx={{ fontSize: '0.75rem', letterSpacing: 0.6 }}>
+  const StatCard = ({ title, value, subtitle, icon, color, trend, percentage }) => (
+    <Card sx={{ 
+      height: '100%', 
+      background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
+      border: `1px solid ${color}20`,
+      borderRadius: 3,
+      position: 'relative',
+      overflow: 'visible'
+    }}>
+      <CardContent sx={{ p: 3 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+          <Box sx={{ flex: 1 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary', 
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                fontSize: '0.75rem',
+                letterSpacing: '0.5px',
+                mb: 1
+              }}
+            >
               {title}
             </Typography>
-            <Typography variant="h4" component="div" sx={{ fontWeight: 800, color }}>
-              {typeof value === 'number' ? value.toFixed(2) : value}
-              {title.includes('Revenus') || title.includes('Dépenses') || title.includes('Coûts') || title.includes('Bénéfice') ? ' €' : ''}
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 800, 
+                color: 'text.primary',
+                lineHeight: 1.2,
+                mb: 1
+              }}
+            >
+              {typeof value === 'number' ? value.toLocaleString('fr-FR', {
+                minimumFractionDigits: title.includes('€') || title.includes('CA') || title.includes('Revenus') || title.includes('Bénéfice') ? 2 : 0,
+                maximumFractionDigits: title.includes('€') || title.includes('CA') || title.includes('Revenus') || title.includes('Bénéfice') ? 2 : 0
+              }) : value}
+              {(title.includes('Revenus') || title.includes('Dépenses') || title.includes('Coûts') || title.includes('Bénéfice') || title.includes('CA')) && ' €'}
             </Typography>
             {subtitle && (
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
                 {trend !== undefined && (
-                  trend > 0 ? 
-                    <TrendingUp sx={{ color: '#22C55E', mr: 0.5, fontSize: '1rem' }} /> : 
-                    <TrendingDown sx={{ color: '#EF4444', mr: 0.5, fontSize: '1rem' }} />
+                  <>
+                    {trend > 0 ? 
+                      <TrendingUp sx={{ color: '#22C55E', fontSize: '1rem' }} /> : 
+                      <TrendingDown sx={{ color: '#EF4444', fontSize: '1rem' }} />
+                    }
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: trend > 0 ? '#22C55E' : '#EF4444',
+                        fontWeight: 600,
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
+                    </Typography>
+                  </>
                 )}
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                   {subtitle}
                 </Typography>
+              </Stack>
+            )}
+            {percentage !== undefined && (
+              <Box sx={{ mt: 2 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    Objectif
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                    {percentage}%
+                  </Typography>
+                </Stack>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={Math.min(percentage, 100)} 
+                  sx={{ 
+                    height: 6, 
+                    borderRadius: 3,
+                    bgcolor: `${color}20`,
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: color,
+                      borderRadius: 3
+                    }
+                  }} 
+                />
               </Box>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56 }}>
+          <Avatar 
+            sx={{ 
+              bgcolor: color,
+              width: 48, 
+              height: 48,
+              boxShadow: `0 8px 24px ${color}40`
+            }}
+          >
             {icon}
           </Avatar>
-        </Box>
+        </Stack>
       </CardContent>
     </Card>
   );
@@ -296,6 +479,10 @@ function Dashboard() {
     }
   };
 
+  const handleRefresh = () => {
+    loadDashboardData();
+  };
+
   if (loading) {
     return (
       <Box sx={{ 
@@ -309,129 +496,344 @@ function Dashboard() {
     );
   }
 
+  const walletTag = (w) => {
+    const map = { Caisse: 'success', Banque: 'info', Coffre: 'warning' };
+    return <Chip size="small" color={map[w] || 'default'} label={w || '—'} variant={map[w] ? 'filled' : 'outlined'} sx={{ ml: 1 }} />;
+  };
+
   return (
-    <Box sx={{ minHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', gap: 3, mx: { xs: 0, sm: -2, md: -3 }, overflowX: 'hidden' }}>
+    <Box sx={{ 
+      minHeight: 'calc(100vh - 100px)', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: 3, 
+      mx: { xs: 0, sm: -2, md: -3 }, 
+      overflowX: 'hidden' 
+    }}>
       {/* Header */}
-      <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: { xs: 2, sm: 3 }, flexWrap: 'wrap', rowGap: 1 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 800, mb: 0 }}>
-          Tableau de Bord
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<PictureAsPdf />}
-          onClick={handleExportPDF}
-        >
-          Export PDF
-        </Button>
+      <Box sx={{ 
+        flexShrink: 0, 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        px: { xs: 2, sm: 3 }, 
+        flexWrap: 'wrap', 
+        rowGap: 1 
+      }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
+            Tableau de Bord
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Vue d'ensemble de votre activité aujourd'hui
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={handleRefresh}
+          >
+            Actualiser
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<PictureAsPdf />}
+            onClick={handleExportPDF}
+          >
+            Export PDF
+          </Button>
+        </Stack>
       </Box>
 
-      {/* Main Content - Full width, page scroll */}
+      {/* Main Content */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, px: { xs: 2, sm: 3 }, pb: 2 }}>
-        {/* Stats Cards */}
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} lg={3}>
-            <StatCard title="Revenus Aujourd'hui" value={stats.revenusJour} subtitle={`${trendRevenu.toFixed(1)}% vs hier`} icon={<Euro />} color="#6366F1" trend={trendRevenu} />
-          </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
-            <StatCard title="Coûts des Ventes Aujourd'hui" value={stats.coutsJour} subtitle="Coût des biens vendus" icon={<TrendingDown />} color="#0ea5e9" />
-          </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
-            <StatCard title="Dépenses Aujourd'hui" value={stats.depensesJour} subtitle="Total dépensé" icon={<TrendingDown />} color="#EF4444" />
-          </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
-            <StatCard title="Bénéfice Net Aujourd'hui" value={beneficeNet} subtitle="Revenus - Coûts - Dépenses" icon={<Euro />} color={beneficeNet > 0 ? '#22C55E' : '#EF4444'} />
-          </Grid>
+        {/* Top Stats Row */}
+        <Grid container spacing={3} wrap="nowrap" sx={{ overflowX: 'auto', pr: 1 }}>
+        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+          <StatCard 
+            title="Revenus Aujourd'hui" 
+            value={stats.revenusJour} 
+            subtitle="vs hier"
+            icon={<Euro />} 
+            color="#6366F1" 
+            trend={trendRevenu}
+            percentage={75}
+          />
+        </Grid>
+        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+          <StatCard 
+            title="Ventes Aujourd'hui" 
+            value={stats.ventesJour} 
+            subtitle="commandes"
+            icon={<ShoppingCart />} 
+            color="#10B981"
+          />
+        </Grid>
+        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+          <StatCard 
+            title="Panier Moyen" 
+            value={stats.panierMoyenJour} 
+            subtitle="par commande"
+            icon={<Euro />} 
+            color="#F59E0B"
+          />
+        </Grid>
+        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+          <StatCard 
+            title="CA du Mois" 
+            value={stats.caMois} 
+            subtitle="objectif: 25,000 €"
+            icon={<TrendingUp />} 
+            color="#8B5CF6"
+            percentage={78}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Charts and Activity Row */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Sales Chart */}
+        <Grid item xs={12} md={9} lg={10}>
+          <Paper sx={{ 
+            p: 3, 
+            borderRadius: 3,
+            boxShadow: '0 8px 24px rgba(255, 255, 255, 0.06)',
+            height: 500
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              Ventes - 7 derniers jours
+            </Typography>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={graphData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12 }}
+                  stroke="#64748B"
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  stroke="#64748B"
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'black',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                  formatter={(value) => [`${value} €`, 'Revenus']}
+                />
+                <Bar 
+                  dataKey="revenus" 
+                  fill="#6366F1" 
+                  radius={[4, 4, 0, 0]}
+                  name="Revenus"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </Paper>
         </Grid>
 
-        {/* Charts + Activity */}
-        <Grid container spacing={3} sx={{ flex: 1 }}>
-          <Grid item xs={12} md={7} lg={8}>
+        {/* Recent Activity */}
+        <Grid item xs={12} md={3} lg={2}>
+          <Paper sx={{ 
+            p: 3, 
+            borderRadius: 3,
+            boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
+            height: 500,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+              Activité Récente
+            </Typography>
+            <List dense sx={{ flex: 1, overflow: 'auto' }}>
+              {recentTx.slice(0, 6).map((tx, index) => (
+                <ListItem key={tx.id} sx={{ px: 0, py: 1 }}>
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: tx.type === 'Revenu' ? '#10B981' : '#EF4444',
+                      width: 32, 
+                      height: 32, 
+                      mr: 2,
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {tx.type === 'Revenu' ? '€' : '-'}
+                  </Avatar>
+                  <ListItemText
+                    primary={
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {tx.description || (tx.type === 'Revenu' ? 'Vente' : 'Dépense')}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(tx.created_at).toLocaleTimeString('fr-FR', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </Typography>
+                    }
+                  />
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: 700,
+                      color: tx.type === 'Revenu' ? '#10B981' : '#EF4444'
+                    }}
+                  >
+                    {tx.type === 'Revenu' ? '+' : '-'}{Number(tx.montant).toFixed(2)} €
+                  </Typography>
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Secondary Stats and Tables */}
+      <Grid container spacing={3}>
+        {/* Wallet Balances */}
+        {walletBalances && (
+          <Grid item xs={12} md={4}>
             <Paper sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              height: '100%',
-              minHeight: { xs: 280, sm: 340, md: 400 },
-              boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
-              display: 'flex',
-              flexDirection: 'column'
+              p: 3, 
+              borderRadius: 3,
+              boxShadow: '0 8px 24px rgba(15,23,42,0.06)'
             }}>
-              <Typography variant="h6" gutterBottom>
-                Revenus des 7 derniers jours
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+                Soldes Portefeuilles
               </Typography>
-              <Box sx={{ flex: 1, minHeight: 320 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={graphData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} €`, 'Revenus']} />
-                    <Line type="monotone" dataKey="revenus" stroke="#6366F1" strokeWidth={3} dot={{ fill: '#6366F1', strokeWidth: 2, r: 6 }} activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Box>
+              <Stack spacing={2}>
+                {Object.entries(walletBalances).map(([wallet, balance]) => {
+                  const colors = {
+                    Caisse: '#22C55E',
+                    Banque: '#3B82F6', 
+                    Coffre: '#F59E0B'
+                  };
+                  return (
+                    <Box 
+                      key={wallet}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: `${colors[wallet]}10`,
+                        border: `1px solid ${colors[wallet]}20`
+                      }}
+                    >
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            {wallet}
+                          </Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            {balance.toFixed(2)} €
+                          </Typography>
+                        </Box>
+                        <Avatar sx={{ bgcolor: colors[wallet], width: 32, height: 32 }}>
+                          <AccountBalance sx={{ fontSize: '1rem' }} />
+                        </Avatar>
+                      </Stack>
+                    </Box>
+                  );
+                })}
+              </Stack>
             </Paper>
           </Grid>
-          <Grid item xs={12} md={5} lg={4}>
-            <Paper sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              height: '100%',
-              minHeight: { xs: 280, sm: 340, md: 400 },
-              display: 'flex', 
-              flexDirection: 'column', 
-              boxShadow: '0 8px 24px rgba(15,23,42,0.06)' 
-            }}>
-              <Typography variant="h6" gutterBottom>
-                Activité Récente
-              </Typography>
-              <List dense sx={{ flex: 1, overflow: 'auto' }}>
-                {recentTx.map(tx => (
-                  <Box key={tx.id} component="li">
-                    <ListItem secondaryAction={<Typography sx={{ fontWeight: 700 }}>{Number(tx.montant).toFixed(2)} €</Typography>}>
-                      <ListItemText
-                        primary={tx.description || (tx.type === 'Revenu' ? 'Encaissement' : 'Dépense')}
-                        secondary={`${new Date(tx.created_at).toLocaleDateString('fr-FR')} ${new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
-                      />
-                      <Chip size="small" label={tx.type} color={tx.type === 'Revenu' ? 'success' : 'error'} sx={{ ml: 1 }} />
-                    </ListItem>
-                    <Divider />
+        )}
+
+        {/* Top Products */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ 
+            p: 3, 
+            borderRadius: 3,
+            boxShadow: '0 8px 24px rgba(15,23,42,0.06)'
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              Stock Faible
+            </Typography>
+            <Stack spacing={2}>
+              {lowStock.length > 0 ? lowStock.map((item) => (
+                <Box 
+                  key={item.id}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)'
+                  }}
+                >
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {item.nom}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Stock restant
+                      </Typography>
+                    </Box>
+                    <Chip 
+                      label={`${item.quantite_stock}`}
+                      color="error"
+                      size="small"
+                      sx={{ fontWeight: 700 }}
+                    />
+                  </Stack>
+                </Box>
+              )) : (
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                  Tous les stocks sont suffisants
+                </Typography>
+              )}
+            </Stack>
+          </Paper>
+        </Grid>
+
+        {/* Repairs Status */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ 
+            p: 3, 
+            borderRadius: 3,
+            boxShadow: '0 8px 24px rgba(15,23,42,0.06)'
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              État des Réparations
+            </Typography>
+            <Stack spacing={2}>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Reçu</Typography>
+                    <Typography variant="caption" color="text.secondary">En attente</Typography>
                   </Box>
-                ))}
-                {recentTx.length === 0 && (
-                  <Typography color="text.secondary">Aucune activité récente.</Typography>
-                )}
-              </List>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        {/* Bottom: Stock & Repairs */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: { xs: 2, sm: 3 }, boxShadow: '0 8px 24px rgba(15,23,42,0.06)' }}>
-              <Typography variant="h6" gutterBottom>Stocks Faibles</Typography>
-              <List dense>
-                {lowStock.map(p => (
-                  <ListItem key={p.id}>
-                    <ListItemText primary={p.nom} secondary={`Stock: ${p.quantite_stock}`} />
-                  </ListItem>
-                ))}
-                {lowStock.length === 0 && (
-                  <Typography color="text.secondary">Aucun article en faible stock.</Typography>
-                )}
-              </List>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: { xs: 2, sm: 3 }, boxShadow: '0 8px 24px rgba(15,23,42,0.06)' }}>
-              <Typography variant="h6" gutterBottom>Réparations</Typography>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Chip icon={<Build />} label={`Reçu: ${repairCounts.recus}`} />
-                <Chip icon={<Build />} color="info" label={`En cours: ${repairCounts.enCours}`} />
-                <Chip icon={<Build />} color="success" label={`Terminé: ${repairCounts.termines}`} />
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{repairCounts.recus}</Typography>
+                </Stack>
               </Box>
-            </Paper>
-          </Grid>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>En cours</Typography>
+                    <Typography variant="caption" color="text.secondary">En réparation</Typography>
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{repairCounts.enCours}</Typography>
+                </Stack>
+              </Box>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Terminé</Typography>
+                    <Typography variant="caption" color="text.secondary">Prêt à récupérer</Typography>
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{repairCounts.termines}</Typography>
+                </Stack>
+              </Box>
+            </Stack>
+          </Paper>
         </Grid>
+      </Grid>
       </Box>
     </Box>
   );

@@ -13,10 +13,12 @@ import DetailFiche from './DetailFiche.jsx';
 import Dashboard from './Dashboard.jsx';
 import CreerFiche from './CreerFiche.jsx';
 import AdminSecurite from './AdminSecurite.jsx';
-import HistoriqueEncaisse from './HistoriqueEncaisse.jsx';
-import ClotureCaisse from './ClotureCaisse.jsx';
+import GestionEncaisse from './GestionEncaisse.jsx';
+import GestionDepenses from './GestionDepenses.jsx';
+import Transferts from './Transferts.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './global.css'
 
 const theme = createTheme({
   palette: {
@@ -58,8 +60,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="reparations" element={<VueReparations />} />
             <Route path="reparations/nouveau" element={<CreerFiche />} />
             <Route path="reparations/:id" element={<DetailFiche />} />
-            <Route path="historique-encaisse" element={<HistoriqueEncaisse />} />
-            <Route path="cloture-caisse" element={<ClotureCaisse />} />
+            <Route path="gestion-encaisse" element={<GestionEncaisse />} />
+            <Route path="depenses" element={<GestionDepenses />} />
+            <Route path="transferts" element={<Transferts />} />
             <Route path="admin" element={<AdminSecurite />} />
           </Route>
         </Routes>
