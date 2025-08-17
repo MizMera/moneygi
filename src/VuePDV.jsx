@@ -239,13 +239,19 @@ function VuePDV() {
       const ticketNo = `T-${date.toISOString().slice(0,19).replace(/[:T]/g,'')}`;
       
       // Header
-      doc.setFontSize(14);
-      doc.text('Reçu de Vente', 14, 16);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text('Mizania+ - Reçu de Vente', 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
       
-      doc.setFontSize(10);
-      doc.text(`Ticket: ${ticketNo}`, 14, 20);
-      doc.text(`Date: ${date.toLocaleString('fr-FR')}`, 14, 25);
-      doc.text(`Mode de paiement: ${modePaiement}`, 14, 30);
+      
+      // Summary
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.text(`Ticket: ${ticketNo}`, 14, 32);
+      doc.text(`Date: ${date.toLocaleString('fr-FR')}`, 14, 40);
+      doc.text(`Mode de paiement: ${modePaiement}`, 14, 48);
       
       console.log('Header added, creating table...');
       
@@ -257,7 +263,7 @@ function VuePDV() {
         `${(Number(i.prix_vente) * Number(i.quantite)).toFixed(2)} €`
       ]);
       autoTable(doc, {
-        startY: 36,
+        startY: 54,
         head: [['Article', 'PU', 'Qté', 'Total']],
         body: tableData,
         styles: { fontSize: 10 }

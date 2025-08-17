@@ -20,7 +20,7 @@ function StatutUtilisateurActuel() {
   }, []);
 
   return (
-    <Paper elevation={2} sx={{ padding: 2, backgroundColor: '#f5f5f5' }}>
+    <Paper elevation={2} sx={{ p: 2, bgcolor: 'transparent' }}>
       <Typography variant="h6">Mon Statut Actuel</Typography>
       <Box>
         <Typography><strong>Email:</strong> {user?.email || 'Non connecté'}</Typography>

@@ -21,7 +21,9 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TableContainer,
   Stack
+  , IconButton
 } from '@mui/material';
 import {
   TrendingUp,
@@ -35,17 +37,21 @@ import {
   ShoppingCart,
   Star,
   Person,
-  Assignment
+  Assignment,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
+  LineChart,
+  Line,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -506,8 +512,10 @@ function Dashboard() {
       minHeight: 'calc(100vh - 100px)', 
       display: 'flex', 
       flexDirection: 'column', 
-      gap: 3, 
-      mx: { xs: 0, sm: -2, md: -3 }, 
+      gap: 2, 
+      px: { xs: 2, sm: 3, md: 4 },
+      mx: 'auto',
+      maxWidth: 1200,
       overflowX: 'hidden' 
     }}>
       {/* Header */}
@@ -547,10 +555,10 @@ function Dashboard() {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, px: { xs: 2, sm: 3 }, pb: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 }, pb: 2 }}>
         {/* Top Stats Row */}
-        <Grid container spacing={3} wrap="nowrap" sx={{ overflowX: 'auto', pr: 1 }}>
-        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+        <Grid container spacing={3} wrap="wrap">
+        <Grid item xs={12} sm={6} md={3} lg={3}>
           <StatCard 
             title="Revenus Aujourd'hui" 
             value={stats.revenusJour} 
@@ -561,7 +569,7 @@ function Dashboard() {
             percentage={75}
           />
         </Grid>
-        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+        <Grid item xs={12} sm={6} md={3} lg={3}>
           <StatCard 
             title="Ventes Aujourd'hui" 
             value={stats.ventesJour} 
@@ -570,7 +578,7 @@ function Dashboard() {
             color="#10B981"
           />
         </Grid>
-        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+        <Grid item xs={12} sm={6} md={3} lg={3}>
           <StatCard 
             title="Panier Moyen" 
             value={stats.panierMoyenJour} 
@@ -579,7 +587,7 @@ function Dashboard() {
             color="#F59E0B"
           />
         </Grid>
-        <Grid item xs={6} sm={6} md={3} lg={3} sx={{ minWidth: 260 }}>
+        <Grid item xs={12} sm={6} md={3} lg={3}>
           <StatCard 
             title="CA du Mois" 
             value={stats.caMois} 
@@ -592,115 +600,75 @@ function Dashboard() {
       </Grid>
 
       {/* Charts and Activity Row */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Sales Chart */}
-        <Grid item xs={12} md={9} lg={10}>
-          <Paper sx={{ 
-            p: 3, 
+      <Grid container spacing={2} wrap="wrap" sx={{ mb: 3 }}>
+        {/* Line Chart: Net Trend - Last 7 Days */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{
+            p: 2,
             borderRadius: 3,
             boxShadow: '0 8px 24px rgba(255, 255, 255, 0.06)',
-            height: 500
+            minHeight: 300
           }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-              Ventes - 7 derniers jours
+              Évolution nette (Revenus - Dépenses) - 7 derniers jours
             </Typography>
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={graphData}>
+              <LineChart data={graphData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 12 }}
-                  stroke="#64748B"
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  stroke="#64748B"
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'black',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                  formatter={(value) => [`${value} €`, 'Revenus']}
-                />
-                <Bar 
-                  dataKey="revenus" 
-                  fill="#6366F1" 
-                  radius={[4, 4, 0, 0]}
-                  name="Revenus"
-                />
-              </BarChart>
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#64748B" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#64748B" />
+                <Tooltip formatter={(value) => [`${value.toFixed(2)} €`, 'Net']} />
+                <Legend verticalAlign="top" height={36} />
+                <Line type="monotone" dataKey="net" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Net" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+        {/* Pie Chart: Monthly Breakdown */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{
+            p: 2,
+            borderRadius: 3,
+            boxShadow: '0 8px 24px rgba(255, 255, 255, 0.06)',
+            minHeight: 300,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+              Répartition mensuelle: Revenus vs Dépenses
+            </Typography>
+            <ResponsiveContainer width="100%" height={350}>
+              <PieChart>
+                <Pie
+                  data={[{ name: 'Revenus', value: stats.caMois }, { name: 'Dépenses', value: stats.depensesMois }]}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  <Cell fill="#6366F1" />
+                  <Cell fill="#EF4444" />
+                </Pie>
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
             </ResponsiveContainer>
           </Paper>
         </Grid>
 
-        {/* Recent Activity */}
-        <Grid item xs={12} md={3} lg={2}>
-          <Paper sx={{ 
-            p: 3, 
-            borderRadius: 3,
-            boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
-            height: 500,
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              Activité Récente
-            </Typography>
-            <List dense sx={{ flex: 1, overflow: 'auto' }}>
-              {recentTx.slice(0, 6).map((tx, index) => (
-                <ListItem key={tx.id} sx={{ px: 0, py: 1 }}>
-                  <Avatar 
-                    sx={{ 
-                      bgcolor: tx.type === 'Revenu' ? '#10B981' : '#EF4444',
-                      width: 32, 
-                      height: 32, 
-                      mr: 2,
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    {tx.type === 'Revenu' ? '€' : '-'}
-                  </Avatar>
-                  <ListItemText
-                    primary={
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {tx.description || (tx.type === 'Revenu' ? 'Vente' : 'Dépense')}
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(tx.created_at).toLocaleTimeString('fr-FR', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </Typography>
-                    }
-                  />
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      fontWeight: 700,
-                      color: tx.type === 'Revenu' ? '#10B981' : '#EF4444'
-                    }}
-                  >
-                    {tx.type === 'Revenu' ? '+' : '-'}{Number(tx.montant).toFixed(2)} €
-                  </Typography>
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-        </Grid>
+        {/* Removed inline Recent Activity list */}
       </Grid>
 
       {/* Secondary Stats and Tables */}
       <Grid container spacing={3}>
         {/* Wallet Balances */}
         {walletBalances && (
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={12}>
             <Paper sx={{ 
-              p: 3, 
+              p: { xs: 2, md: 5 }, 
               borderRadius: 3,
               boxShadow: '0 8px 24px rgba(15,23,42,0.06)'
             }}>
@@ -713,7 +681,7 @@ function Dashboard() {
                     Caisse: '#22C55E',
                     Banque: '#3B82F6', 
                     Coffre: '#F59E0B'
-                  };
+                  };  
                   return (
                     <Box 
                       key={wallet}
@@ -726,7 +694,7 @@ function Dashboard() {
                     >
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1 rem' }}>
                             {wallet}
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -746,9 +714,9 @@ function Dashboard() {
         )}
 
         {/* Top Products */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={12}>
           <Paper sx={{ 
-            p: 3, 
+            p: { xs: 2, md: 5 }, 
             borderRadius: 3,
             boxShadow: '0 8px 24px rgba(15,23,42,0.06)'
           }}>
@@ -760,7 +728,7 @@ function Dashboard() {
                 <Box 
                   key={item.id}
                   sx={{
-                    p: 2,
+                    p: 5,
                     borderRadius: 2,
                     bgcolor: 'rgba(239, 68, 68, 0.1)',
                     border: '1px solid rgba(239, 68, 68, 0.2)'
@@ -793,9 +761,9 @@ function Dashboard() {
         </Grid>
 
         {/* Repairs Status */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={8}>
           <Paper sx={{ 
-            p: 3, 
+            p:4 , 
             borderRadius: 3,
             boxShadow: '0 8px 24px rgba(15,23,42,0.06)'
           }}>
@@ -803,7 +771,7 @@ function Dashboard() {
               État des Réparations
             </Typography>
             <Stack spacing={2}>
-              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              <Box sx={{ p: 3, borderRadius: 2, bgcolor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>Reçu</Typography>
@@ -812,7 +780,7 @@ function Dashboard() {
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>{repairCounts.recus}</Typography>
                 </Stack>
               </Box>
-              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+              <Box sx={{ p: 3, borderRadius: 2, bgcolor: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>En cours</Typography>
@@ -821,7 +789,7 @@ function Dashboard() {
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>{repairCounts.enCours}</Typography>
                 </Stack>
               </Box>
-              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+              <Box sx={{ p: 3, borderRadius: 2, bgcolor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>Terminé</Typography>
@@ -834,8 +802,46 @@ function Dashboard() {
           </Paper>
         </Grid>
       </Grid>
-      </Box>
+      {/* Detailed Recent Activity at bottom */}
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 10, borderRadius: 3, boxShadow: '0 8px 24px rgba(15,23,42,0.06)' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+              Activité Récente Détaillée
+            </Typography>
+            <TableContainer sx={{ maxHeight: 600 }}>
+              <Table stickyHeader size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Heure</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Portefeuille</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell align="right">Montant</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {recentTx.map(tx => (
+                    <TableRow key={tx.id} hover>
+                      <TableCell>{new Date(tx.created_at).toLocaleDateString('fr-FR')}</TableCell>
+                      <TableCell>{new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</TableCell>
+                      <TableCell>{tx.description}</TableCell>
+                      <TableCell>{tx.wallet || '-'}</TableCell>
+                      <TableCell>{tx.type}</TableCell>
+                      <TableCell align="right" sx={{ color: tx.type === 'Revenu' ? '#10B981' : '#EF4444', fontWeight: 1000 }}>
+                        {tx.type === 'Revenu' ? '+' : '-'}{Number(tx.montant).toFixed(2)} €
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
+  </Box>
   );
 }
 

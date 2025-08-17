@@ -136,11 +136,20 @@ function VueReparations() {
       const doc = new jsPDF();
       
       // Header
+      doc.setFont('helvetica','bold');
       doc.setFontSize(18);
-      doc.text('Rapport des Réparations', 14, 22);
+      doc.text('Mizania+ - Rapport des Réparations', 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
+
+      // Summary
+      doc.setFont('helvetica','normal');
       doc.setFontSize(12);
       doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 14, 32);
       doc.text(`Nombre de fiches: ${fiches.length}`, 14, 40);
+      // separator before stats
+      doc.setLineWidth(0.5);
+      doc.line(14, 44, 196, 44);
 
       // Statistics
       const stats = {
@@ -150,15 +159,16 @@ function VueReparations() {
       };
 
       doc.setFontSize(14);
-      doc.text('Répartition par statut:', 14, 55);
+      doc.text('Répartition par statut:', 14, 54);
       doc.setFontSize(11);
-      doc.text(`Reçu: ${stats.enAttente}`, 20, 65);
+      doc.text(`Reçu: ${stats.enAttente}`, 20, 64);
       doc.text(`En cours: ${stats.enCours}`, 20, 72);
-      doc.text(`Terminé: ${stats.termine}`, 20, 79);
+      doc.text(`Terminé: ${stats.termine}`, 20, 80);
 
-      // Replace table generation
+      // Table
       autoTable(doc, {
-        head: [['ID', 'Client', 'Appareil', 'Statut', 'Date']],
+        startY: 88,
+        head: [['ID','Client','Appareil','Statut','Date']],
         body: sortedFiches.map(f => [
           String(f.id),
           f.clients?.nom || '—',
@@ -166,6 +176,8 @@ function VueReparations() {
           f.statut || '—',
           new Date(f.created_at).toLocaleDateString('fr-FR')
         ]),
+        theme: 'striped',
+        headStyles: { fillColor: [99,102,241], textColor: 255, halign: 'center' },
         styles: { fontSize: 9 }
       });
 

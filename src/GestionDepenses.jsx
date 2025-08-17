@@ -237,8 +237,15 @@ function GestionDepenses() {
   const generatePDF = () => {
     try {
       const doc = new jsPDF();
+      // Header
+      doc.setFont('helvetica','bold');
       doc.setFontSize(18);
-      doc.text('Rapport des Dépenses', 14, 22);
+      doc.text('Mizania+ - Rapport des Dépenses', 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
+      
+      // Summary
+      doc.setFont('helvetica','normal');
       doc.setFontSize(12);
       doc.text(`Période: ${new Date(dateFrom).toLocaleDateString('fr-FR')} - ${new Date(dateTo).toLocaleDateString('fr-FR')}`, 14, 32);
       doc.text(`Généré le: ${new Date().toLocaleString('fr-FR')}`, 14, 40);

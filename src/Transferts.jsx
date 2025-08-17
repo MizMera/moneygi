@@ -31,6 +31,9 @@ import {
   DialogActions
 } from '@mui/material';
 import { SwapHoriz, Send, AccountBalance, Delete } from '@mui/icons-material';
+import { PictureAsPdf } from '@mui/icons-material';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const WALLET_OPTIONS = ['Caisse', 'Banque', 'Coffre'];
 
@@ -38,6 +41,8 @@ function Transferts() {
   const [fromWallet, setFromWallet] = useState('Caisse');
   const [toWallet, setToWallet] = useState('Banque');
   const [amount, setAmount] = useState('');
+  // Month filter for transfers
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0,7));
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [entries, setEntries] = useState([]);
@@ -295,12 +300,80 @@ function Transferts() {
     );
   };
 
+  // Filter entries by selected month
+  const filteredEntries = useMemo(() => {
+    if (!selectedMonth) return entries;
+    const [year, month] = selectedMonth.split('-').map(Number);
+    return entries.filter(e => {
+      const d = new Date(e.created_at);
+      return d.getFullYear() === year && d.getMonth() + 1 === month;
+    });
+  }, [entries, selectedMonth]);
+
+  // PDF Export for transfers
+  const exportTransfersPDF = () => {
+    try {
+      const doc = new jsPDF();
+      // Header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text('Mizania+ - Transferts', 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
+      // Summary
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 14, 32);
+      doc.text(`Nombre de transferts: ${filteredEntries.length}`, 14, 40);
+      // Table
+      autoTable(doc, {
+        startY: 48,
+        head: [['Date', 'Type', 'Portefeuille', 'Description', 'Montant (€)']],
+        body: filteredEntries.map(e => [
+          fmtDateTime(e.created_at),
+          e.type,
+          e.wallet || '',
+          e.description || '',
+          Number(e.montant).toFixed(2)
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [99,102,241], textColor: 255, halign: 'center' },
+        styles: { fontSize: 9 }
+      });
+      doc.save(`transferts-${selectedMonth}.pdf`);
+
+      toast.success('Rapport PDF généré avec succès!');
+    } catch (error) {
+      console.error('Error generating Transferts PDF:', error);
+      toast.error('Erreur lors de la génération du PDF: ' + error.message);
+    }
+  };
+
   return (
     <Box sx={{ minHeight: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', gap: 2, mx: { xs: -2, sm: -3 } }}>
       {/* Header */}
       <Box sx={{ flexShrink: 0, px: { xs: 2, sm: 3 } }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
           <Typography variant="h4" sx={{ fontWeight: 800 }}>Transferts de Caisse</Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TextField
+              type="month"
+              label="Mois"
+              size="small"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ width: 140 }}
+            />
+            <Button
+              variant="outlined"
+              startIcon={<PictureAsPdf />}
+              onClick={exportTransfersPDF}
+              disabled={filteredEntries.length === 0}
+            >
+              Exporter PDF
+            </Button>
+          </Stack>
         </Stack>
       </Box>
 
@@ -368,7 +441,7 @@ function Transferts() {
         </Grid>
 
         {/* Right: recent movements */}
-        <Grid item xs={12} md={7}>
+        <Grid item xs={12} md={12}>
           <Paper sx={{ p: { xs: 2, sm: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Derniers mouvements</Typography>
             <Box sx={{ flex: 1, overflow: 'auto' }}>
@@ -387,10 +460,10 @@ function Transferts() {
                   {loading && (
                     <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4 }}>Chargement...</TableCell></TableRow>
                   )}
-                  {!loading && entries.length === 0 && (
+                  {!loading && filteredEntries.length === 0 && (
                     <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>Aucun transfert</TableCell></TableRow>
                   )}
-                  {!loading && entries.map(e => (
+                  {!loading && filteredEntries.map(e => (
                     <TableRow key={e.id} hover>
                       <TableCell>{fmtDateTime(e.created_at)}</TableCell>
                       <TableCell>

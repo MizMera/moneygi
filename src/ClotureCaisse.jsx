@@ -82,10 +82,16 @@ function ClotureCaisse() {
       const doc = new jsPDF();
       
       // Header
+      doc.setFont('helvetica','bold');
       doc.setFontSize(18);
-      doc.text('Rapport de Clôture de Caisse', 14, 22);
+      doc.text('Mizania+ - Rapport de Clôture de Caisse', 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
       
+      // Summary
+      doc.setFont('helvetica','normal');
       doc.setFontSize(12);
+      
       doc.text(`Date: ${new Date(date).toLocaleDateString('fr-FR')}`, 14, 32);
       doc.text(`Heure: ${new Date().toLocaleString('fr-FR')}`, 14, 40);
       

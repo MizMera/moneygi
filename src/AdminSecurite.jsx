@@ -46,24 +46,25 @@ function AdminSecurite() {
 
   return (
     <Box sx={{ 
-      height: 'calc(100vh - 100px)', 
+      minHeight: 'calc(100vh - 100px)', 
       display: 'flex', 
       flexDirection: 'column',
-      gap: 2
+      gap: 2,
+      mx: { xs: -2, sm: -3 }
     }}>
       <Typography variant="h4" sx={{ fontWeight: 800 }}>
         Administration & Sécurité
       </Typography>
 
-      <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 3, px: { xs: 2, sm: 3 } }}>
         {/* SECTION VISIBLE PAR TOUS */}
-        <Card sx={{ p: 3 }}>
+        <Card sx={{ p: 5, bgcolor: 'background.default', alignSelf: 'center' }}>
           <StatutUtilisateurActuel />
         </Card>
 
         {/* SECTION VISIBLE UNIQUEMENT PAR LES ADMINS */}
         {profil?.role === 'admin' ? (
-          <Card sx={{ p: 3, flexGrow: 1 }}>
+          <Card sx={{ p: 2, flexGrow: 0, maxWidth: 3000, alignSelf: 'center' }}>
             <Typography variant="h5" color="primary" sx={{ mb: 3, fontWeight: 600 }}>
               Panneau d'Administration
             </Typography>

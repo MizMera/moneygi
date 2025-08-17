@@ -38,7 +38,7 @@ function Login() {
           alignItems: 'center'
         }}>
           <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
-            Clear Management
+            Mizania+
           </Typography>
           <Typography variant="h6" color="textSecondary">
             Connexion

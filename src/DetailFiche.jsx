@@ -152,14 +152,19 @@ function DetailFiche() {
       const doc = new jsPDF();
 
       // Header
-      doc.setFontSize(16);
-      doc.text(`Facture pour Réparation #${fiche.id}`, 14, 20);
-      
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(18);
+      doc.text(`Mizania+ - Facture Réparation #${fiche.id}`, 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
+      // Details
+      doc.setFont('helvetica','normal');
       doc.setFontSize(12);
+      
       if (fiche.clients) {
-        doc.text(`Client: ${fiche.clients.nom || ''}`, 14, 30);
+        doc.text(`Client: ${fiche.clients.nom || ''}`, 14, 32);
       }
-      doc.text(`Appareil: ${fiche.appareil_description || ''}`, 14, 36);
+      doc.text(`Appareil: ${fiche.appareil_description || ''}`, 14, 40);
 
       // Items table
       const tableData = details.map(d => [

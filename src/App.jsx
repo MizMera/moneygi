@@ -95,9 +95,14 @@ function App() {
   const generatePDF = () => {
     const doc = new jsPDF();
     
-    // Title
+    // Header with app name
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Rapport d\'Inventaire', 14, 22);
+    doc.text('Mizania+ - Rapport d\'Inventaire', 14, 22);
+    doc.setLineWidth(0.5);
+    doc.line(14, 26, 196, 26);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
     
     // Date
     doc.setFontSize(12);

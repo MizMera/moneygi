@@ -62,11 +62,15 @@ function HistoriqueEncaisse() {
   const generateRevenuePDF = () => {
     try {
       const doc = new jsPDF();
-      
       // Header
+      doc.setFont('helvetica','bold');
       doc.setFontSize(18);
-      doc.text('Historique des Encaissements', 14, 22);
+      doc.text('Mizania+ - Historique des Encaissements', 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
       
+      // Summary
+      doc.setFont('helvetica','normal');
       doc.setFontSize(12);
       doc.text(`Période: ${new Date(from).toLocaleDateString('fr-FR')} - ${new Date(to).toLocaleDateString('fr-FR')}`, 14, 32);
       doc.text(`Mode de paiement: ${mode}`, 14, 40);

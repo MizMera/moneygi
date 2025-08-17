@@ -270,12 +270,16 @@ function GestionEncaisse() {
   const generatePDF = () => {
     try {
       const doc = new jsPDF();
-      
       // Header
+      doc.setFont('helvetica','bold');
       doc.setFontSize(18);
       const title = viewMode === 'daily' ? 'Rapport de Clôture de Caisse' : 'Historique des Encaissements';
-      doc.text(title, 14, 22);
+      doc.text(`Mizania+ - ${title}`, 14, 20);
+      doc.setLineWidth(0.5);
+      doc.line(14, 24, 196, 24);
       
+      // Summary
+      doc.setFont('helvetica','normal');
       doc.setFontSize(12);
       if (viewMode === 'daily') {
         doc.text(`Date: ${new Date(date).toLocaleDateString('fr-FR')}`, 14, 32);
