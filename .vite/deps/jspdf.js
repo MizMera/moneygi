@@ -12,12 +12,11 @@ import {
   gt,
   init_jspdf_es_min,
   j,
-  jspdf_es_min_default,
   mt,
   pt,
   vt,
   wt
-} from "./chunk-MM7RTKDG.js";
+} from "./chunk-ADUUVLGA.js";
 import "./chunk-Z54NHHXK.js";
 import "./chunk-V4OQ3NZ2.js";
 init_jspdf_es_min();
@@ -37,6 +36,6 @@ export {
   j as GState,
   B as ShadingPattern,
   M as TilingPattern,
-  jspdf_es_min_default as default,
+  E as default,
   E as jsPDF
 };
