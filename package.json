@@ -14,15 +14,15 @@
     "@emotion/styled": "^11.11.5",
     "@mui/material": "^5.15.20",
     "@supabase/supabase-js": "^2.43.5",
-    "jspdf": "^2.5.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "jspdf": "^3.0.1",
     "jspdf-autotable": "^3.8.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1",
     "react-toastify": "^10.0.5",
     "recharts": "^2.12.7",
-    "vite": "^5.2.0",
-    "@vitejs/plugin-react": "^4.2.1"
+    "vite": "^7.1.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

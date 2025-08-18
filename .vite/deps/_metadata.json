@@ -1,8 +1,142 @@
 {
-  "hash": "b7cbb54e",
+  "hash": "e189fe29",
   "configHash": "62277b0b",
-  "lockfileHash": "b58b393c",
-  "browserHash": "1ed2c3cd",
-  "optimized": {},
-  "chunks": {}
+  "lockfileHash": "b05f7b62",
+  "browserHash": "95d97f12",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "ea519ebc",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "6cfd6e7a",
+      "needsInterop": true
+    },
+    "react-toastify": {
+      "src": "../../node_modules/react-toastify/dist/react-toastify.esm.mjs",
+      "file": "react-toastify.js",
+      "fileHash": "69181048",
+      "needsInterop": false
+    },
+    "jspdf-autotable": {
+      "src": "../../node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.js",
+      "file": "jspdf-autotable.js",
+      "fileHash": "f5ba3265",
+      "needsInterop": true
+    },
+    "@supabase/supabase-js": {
+      "src": "../../node_modules/@supabase/supabase-js/dist/module/index.js",
+      "file": "@supabase_supabase-js.js",
+      "fileHash": "7ac709b9",
+      "needsInterop": false
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.js",
+      "file": "react-router-dom.js",
+      "fileHash": "3ce4d434",
+      "needsInterop": false
+    },
+    "jspdf": {
+      "src": "../../node_modules/jspdf/dist/jspdf.es.min.js",
+      "file": "jspdf.js",
+      "fileHash": "843b986f",
+      "needsInterop": false
+    },
+    "recharts": {
+      "src": "../../node_modules/recharts/es6/index.js",
+      "file": "recharts.js",
+      "fileHash": "c8240d56",
+      "needsInterop": false
+    },
+    "@mui/material/styles": {
+      "src": "../../node_modules/@mui/material/styles/index.js",
+      "file": "@mui_material_styles.js",
+      "fileHash": "9b7efa6d",
+      "needsInterop": false
+    },
+    "@mui/material/CssBaseline": {
+      "src": "../../node_modules/@mui/material/CssBaseline/index.js",
+      "file": "@mui_material_CssBaseline.js",
+      "fileHash": "2c10501b",
+      "needsInterop": false
+    },
+    "@mui/material": {
+      "src": "../../node_modules/@mui/material/index.js",
+      "file": "@mui_material.js",
+      "fileHash": "78c8922b",
+      "needsInterop": false
+    },
+    "@mui/material/Grid": {
+      "src": "../../node_modules/@mui/material/Grid/index.js",
+      "file": "@mui_material_Grid.js",
+      "fileHash": "92969724",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-MM7RTKDG": {
+      "file": "chunk-MM7RTKDG.js"
+    },
+    "browser-VLKRZ7RP": {
+      "file": "browser-VLKRZ7RP.js"
+    },
+    "html2canvas.esm-VYPOCGSV": {
+      "file": "html2canvas__esm-VYPOCGSV.js"
+    },
+    "purify.es-OO6ZHDLM": {
+      "file": "purify__es-OO6ZHDLM.js"
+    },
+    "index.es-MWVRDUEO": {
+      "file": "index__es-MWVRDUEO.js"
+    },
+    "chunk-ABERJ5IJ": {
+      "file": "chunk-ABERJ5IJ.js"
+    },
+    "chunk-SHDTUUX6": {
+      "file": "chunk-SHDTUUX6.js"
+    },
+    "chunk-VCAOAOP7": {
+      "file": "chunk-VCAOAOP7.js"
+    },
+    "chunk-B4BYOLGQ": {
+      "file": "chunk-B4BYOLGQ.js"
+    },
+    "chunk-AFHDNPZB": {
+      "file": "chunk-AFHDNPZB.js"
+    },
+    "chunk-V4W2DCWN": {
+      "file": "chunk-V4W2DCWN.js"
+    },
+    "chunk-3P5NQZCG": {
+      "file": "chunk-3P5NQZCG.js"
+    },
+    "chunk-I7VG3AWZ": {
+      "file": "chunk-I7VG3AWZ.js"
+    },
+    "chunk-ZZET46B3": {
+      "file": "chunk-ZZET46B3.js"
+    },
+    "chunk-Z54NHHXK": {
+      "file": "chunk-Z54NHHXK.js"
+    },
+    "chunk-E5ODL3YF": {
+      "file": "chunk-E5ODL3YF.js"
+    },
+    "chunk-2KHBIA62": {
+      "file": "chunk-2KHBIA62.js"
+    },
+    "chunk-65KY755N": {
+      "file": "chunk-65KY755N.js"
+    },
+    "chunk-C5A7FNJB": {
+      "file": "chunk-C5A7FNJB.js"
+    },
+    "chunk-V4OQ3NZ2": {
+      "file": "chunk-V4OQ3NZ2.js"
+    }
+  }
 }
