@@ -177,7 +177,7 @@ function Transferts() {
       return;
     }
     if (availableBalance !== null && amountNumber > availableBalance + 1e-6) {
-      toast.error(`Montant supérieur au solde ${fromWallet} (${(availableBalance).toFixed(2)} €)`);
+      toast.error(`Montant supérieur au solde ${fromWallet} (${availableBalance.toFixed(2)} DT)`);
       return;
     }
 
@@ -285,7 +285,7 @@ function Transferts() {
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Box>
                       <Typography color="text.secondary" variant="overline">{w}</Typography>
-                      <Typography variant="h5" sx={{ fontWeight: 800 }}>{Number(val).toFixed(2)} €</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 800 }}>{Number(val).toFixed(2)} DT</Typography>
                     </Box>
                     <Avatar sx={{ bgcolor: colorMap[w] || 'primary.main' }}>
                       <AccountBalance />
@@ -328,13 +328,13 @@ function Transferts() {
       // Table
       autoTable(doc, {
         startY: 48,
-        head: [['Date', 'Type', 'Portefeuille', 'Description', 'Montant (€)']],
+        head: [['Date', 'Type', 'Portefeuille', 'Description', 'Montant (DT)']],
         body: filteredEntries.map(e => [
           fmtDateTime(e.created_at),
           e.type,
           e.wallet || '',
           e.description || '',
-          Number(e.montant).toFixed(2)
+          `${Number(e.montant).toFixed(2)} DT`
         ]),
         theme: 'striped',
         headStyles: { fillColor: [99,102,241], textColor: 255, halign: 'center' },
@@ -408,8 +408,8 @@ function Transferts() {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={6} md>
-                  <TextField
-                    label="Montant (€)"
+                <TextField
+                    label="Montant (DT)"
                     type="text"
                     required
                     size="small"
@@ -417,7 +417,7 @@ function Transferts() {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value.replace(/[^0-9.,]/g, ''))}
                     inputProps={{ inputMode: 'decimal' }}
-                    helperText={availableBalance !== null ? `Solde: ${availableBalance.toFixed(2)} €` : ''}
+                    helperText={availableBalance !== null ? `Solde: ${availableBalance.toFixed(2)} DT` : ''}
                     error={availableBalance !== null && Number.isFinite(amountNumber) && amountNumber > (availableBalance + 1e-6)}
                   />
                 </Grid>
@@ -441,7 +441,7 @@ function Transferts() {
         </Grid>
 
         {/* Right: recent movements */}
-        <Grid item xs={12} md={12}>
+        <Grid item xs={12} md={7}>
           <Paper sx={{ p: { xs: 2, sm: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Derniers mouvements</Typography>
             <Box sx={{ flex: 1, overflow: 'auto' }}>
@@ -452,7 +452,7 @@ function Transferts() {
                     <TableCell>Type</TableCell>
                     <TableCell>Portefeuille</TableCell>
                     <TableCell>Description</TableCell>
-                    <TableCell align="right">Montant (€)</TableCell>
+                <TableCell align="right">Montant (DT)</TableCell>
                     <TableCell align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -471,7 +471,7 @@ function Transferts() {
                       </TableCell>
                       <TableCell>{walletChip(e.wallet || 'Caisse')}</TableCell>
                       <TableCell>{e.description || '-'}</TableCell>
-                      <TableCell align="right">{Number(e.montant).toFixed(2)}</TableCell>
+                      <TableCell align="right">{Number(e.montant).toFixed(2)} DT</TableCell>
                       <TableCell align="center">
                         <IconButton 
                           size="small" 

@@ -17,6 +17,7 @@ import {
   TableCell,
   TableBody,
   Stack,
+  TextField,
   Chip,
   Divider,
   CircularProgress
@@ -29,6 +30,10 @@ function DetailFiche() {
   const [fiche, setFiche] = useState(null);
   const [details, setDetails] = useState([]);
   const [chargement, setChargement] = useState(true);
+  // Invoice settings
+  const [businessName, setBusinessName] = useState('Mizania+');
+  const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().slice(0,10));
+  const [tvaPercent, setTvaPercent] = useState(20);
 
   const handleFinaliser = async () => {
     const totalFinal = calculerTotal();
@@ -37,7 +42,7 @@ function DetailFiche() {
       return;
     }
     
-    if (!window.confirm(`Confirmez-vous la facturation de ${totalFinal.toFixed(2)} € ?`)) {
+    if (!window.confirm(`Confirmez-vous la facturation de ${totalFinal.toFixed(2)} DT ?`)) {
       return;
     }
     
@@ -154,36 +159,53 @@ function DetailFiche() {
       // Header
       doc.setFont('helvetica','bold');
       doc.setFontSize(18);
-      doc.text(`Mizania+ - Facture Réparation #${fiche.id}`, 14, 20);
+      doc.text(`${businessName} - Facture #${fiche.id}`, 14, 20);
       doc.setLineWidth(0.5);
       doc.line(14, 24, 196, 24);
-      // Details
+      // Metadata
       doc.setFont('helvetica','normal');
       doc.setFontSize(12);
+      doc.text(`Date: ${invoiceDate}`, 14, 32);
       
+      // Client & device
       if (fiche.clients) {
-        doc.text(`Client: ${fiche.clients.nom || ''}`, 14, 32);
+        doc.text(`Client: ${fiche.clients.nom || ''}`, 14, 40);
       }
-      doc.text(`Appareil: ${fiche.appareil_description || ''}`, 14, 40);
+      doc.text(`Appareil: ${fiche.appareil_description || ''}`, 14, 48);
 
-      // Items table
+      // Items table with totals and TVA in footer
+      const totalHT = calculerTotal();
+      const montantTVA = totalHT * (tvaPercent / 100);
+      const totalTTC = totalHT + montantTVA;
       const tableData = details.map(d => [
         d.description,
         d.quantite.toString(),
-        `${Number(d.prix).toFixed(2)} €`,
-        `${(Number(d.prix) * Number(d.quantite)).toFixed(2)} €`
+        `${Number(d.prix).toFixed(2)} DT`,
+        `${(Number(d.prix) * Number(d.quantite)).toFixed(2)} DT`
       ]);
       autoTable(doc, {
-        startY: 50,
+        startY: 56,
+        theme: 'grid',
         head: [['Description', 'Quantité', 'Prix Unitaire', 'Total']],
         body: tableData,
-        styles: { fontSize: 10 }
+        foot: [
+          ['Total HT', '', '', `${totalHT.toFixed(2)} DT`],
+          [`TVA (${tvaPercent}%)`, '', '', `${montantTVA.toFixed(2)} DT`],
+          ['Total TTC', '', '', `${totalTTC.toFixed(2)} DT`]
+        ],
+        styles: { fontSize: 10, textColor: 40 },
+        headStyles: { fillColor: [99,102,241], textColor: 255, fontStyle: 'bold' },
+        footStyles: { fillColor: [99,102,241], textColor: 255, fontStyle: 'bold' },
+        bodyStyles: { textColor: 30 },
+        columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } }
       });
 
-      // Total
-      const finalY = doc.lastAutoTable.finalY || 60;
-      doc.setFontSize(12);
-      doc.text(`Total Final: ${calculerTotal().toFixed(2)} €`, 14, finalY + 10);
+      // Signature line below table
+      const finalY = doc.lastAutoTable.finalY || 56;
+      const sigY = finalY + 20;
+      doc.setLineWidth(0.1);
+      doc.line(14, sigY, 80, sigY);
+      doc.text('Signature', 14, sigY + 5);
       
       const filename = `facture-${fiche.id}.pdf`;
       doc.save(filename);
@@ -232,6 +254,32 @@ function DetailFiche() {
 
   return (
     <Box sx={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Invoice settings */}
+      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+        <TextField
+          label="Entreprise"
+          size="small"
+          value={businessName}
+          onChange={e => setBusinessName(e.target.value)}
+        />
+        <TextField
+          label="Date"
+          type="date"
+          size="small"
+          value={invoiceDate}
+          onChange={e => setInvoiceDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          label="TVA (%)"
+          type="number"
+          size="small"
+          inputProps={{ min: 0, max: 100 }}
+          value={tvaPercent}
+          onChange={e => setTvaPercent(parseFloat(e.target.value) || 0)}
+          sx={{ width: 100 }}
+        />
+      </Stack>
       {/* Header */}
       <Box sx={{ flexShrink: 0 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
@@ -300,9 +348,9 @@ function DetailFiche() {
                       <TableRow key={d.id} hover>
                         <TableCell>{d.description}</TableCell>
                         <TableCell align="center">{d.quantite}</TableCell>
-                        <TableCell align="right">{(d.prix / d.quantite).toFixed(2)} €</TableCell>
+                        <TableCell align="right">{(d.prix / d.quantite).toFixed(2)} DT</TableCell>
                         <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                          {d.prix.toFixed(2)} €
+                          {d.prix.toFixed(2)} DT
                         </TableCell>
                       </TableRow>
                     ))}
@@ -320,7 +368,7 @@ function DetailFiche() {
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6">Total Provisoire:</Typography>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                  {calculerTotal().toFixed(2)} €
+                  {calculerTotal().toFixed(2)} DT
                 </Typography>
               </Stack>
             </CardContent>

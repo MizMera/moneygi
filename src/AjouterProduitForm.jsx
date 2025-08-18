@@ -79,8 +79,8 @@ function AjouterProduitForm({ onProduitAjoute }) {
         size="small"
       />
       
-      <TextField 
-        label="Prix d'achat (€)" 
+        <TextField
+            label="Prix d'achat (DT)"
         type="number" 
         variant="outlined" 
         value={prix_achat}
@@ -91,8 +91,8 @@ function AjouterProduitForm({ onProduitAjoute }) {
         size="small"
       />
 
-      <TextField 
-        label="Prix de vente (€)" 
+        <TextField
+            label="Prix de vente (DT)"
         type="number" 
         variant="outlined" 
         value={prix_vente} 

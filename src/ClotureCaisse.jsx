@@ -102,11 +102,11 @@ function ClotureCaisse() {
       doc.text('Résumé de la journée:', 14, 55);
       
       doc.setFontSize(11);
-      doc.text(`Fond de caisse initial: ${Number(fondCaisse).toFixed(2)} €`, 20, 65);
-      doc.text(`Total encaissements: ${totals.total.toFixed(2)} €`, 20, 73);
-      doc.text(`Total dépenses: ${totals.totalDepenses.toFixed(2)} €`, 20, 81);
-      doc.text(`Bénéfice net: ${totals.netCaisse.toFixed(2)} €`, 20, 89);
-      doc.text(`Fond de caisse final: ${totals.caisseTheorique.toFixed(2)} €`, 20, 97);
+      doc.text(`Fond de caisse initial: ${Number(fondCaisse).toFixed(2)} DT`, 20, 65);
+      doc.text(`Total encaissements: ${totals.total.toFixed(2)} DT`, 20, 73);
+      doc.text(`Total dépenses: ${totals.totalDepenses.toFixed(2)} DT`, 20, 81);
+      doc.text(`Bénéfice net: ${totals.netCaisse.toFixed(2)} DT`, 20, 89);
+      doc.text(`Fond de caisse final: ${totals.caisseTheorique.toFixed(2)} DT`, 20, 97);
       
       console.log('Summary added, creating tables...');
       
@@ -117,7 +117,7 @@ function ClotureCaisse() {
         
         autoTable(doc, {
           startY: 121,
-          head: [['Heure', 'Description', 'Montant (€)']],
+          head: [['Heure', 'Description', 'Montant (DT)']],
           body: rows.map(r => [
             new Date(r.created_at).toLocaleTimeString('fr-FR'),
             r.description || '-',
@@ -135,7 +135,7 @@ function ClotureCaisse() {
         
         autoTable(doc, {
           startY: finalY + 21,
-          head: [['Heure', 'Description', 'Montant (€)']],
+          head: [['Heure', 'Description', 'Montant (DT)']],
           body: depenses.map(d => [
             new Date(d.created_at).toLocaleTimeString('fr-FR'),
             d.description || '-',
@@ -194,7 +194,7 @@ function ClotureCaisse() {
         type: 'Cloture',
         source: 'Caisse',
         montant: totals.caisseTheorique,
-        description: `Clôture du ${date} | Net: ${totals.netCaisse.toFixed(2)} €` ,
+        description: `Clôture du ${date} | Net: ${totals.netCaisse.toFixed(2)} DT` ,
         user_id: user?.id || null
       });
       toast.success('Clôture enregistrée.');
@@ -223,7 +223,7 @@ function ClotureCaisse() {
             size="small"
           />
           <TextField 
-            label="Fond de caisse début (€)" 
+            label="Fond de caisse début (DT)" 
             type="number" 
             inputProps={{ step: '0.01' }} 
             value={fondCaisse} 
@@ -270,9 +270,9 @@ function ClotureCaisse() {
                   <TableCell sx={{ fontWeight: 'bold', width: '14%' }}>Ticket</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', width: '22%' }}>Articles</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', width: '26%' }}>Description</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Montant (€)</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold', width: '6%' }}>Coût (€)</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold', width: '6%' }}>Marge (€)</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Montant (DT)</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold', width: '6%' }}>Coût (DT)</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold', width: '6%' }}>Marge (DT)</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -342,25 +342,25 @@ function ClotureCaisse() {
             }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Total ventes</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.total.toFixed(2)} €</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.total.toFixed(2)} DT</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Coûts des ventes</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.couts.toFixed(2)} €</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.couts.toFixed(2)} DT</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Dépenses</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.totalDepenses.toFixed(2)} €</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.totalDepenses.toFixed(2)} DT</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Marge (ventes - coûts)</Typography>
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#22C55E' }}>
-                  {totals.netVentes.toFixed(2)} €
+                  {totals.netVentes.toFixed(2)} DT
                 </Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Caisse théorique</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.caisseTheorique.toFixed(2)} €</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>{totals.caisseTheorique.toFixed(2)} DT</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Bénéfice net caisse</Typography>
@@ -368,7 +368,7 @@ function ClotureCaisse() {
                   fontWeight: 800, 
                   color: totals.netCaisse > 0 ? '#22C55E' : '#EF4444' 
                 }}>
-                  {totals.netCaisse.toFixed(2)} €
+                  {totals.netCaisse.toFixed(2)} DT
                 </Typography>
               </Box>
             </Box>

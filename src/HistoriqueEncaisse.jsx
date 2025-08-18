@@ -82,14 +82,14 @@ function HistoriqueEncaisse() {
       
       doc.setFontSize(11);
       doc.text(`Nombre de transactions: ${rows.length}`, 20, 72);
-      doc.text(`Total encaissé: ${totals.total.toFixed(2)} €`, 20, 80);
-      doc.text(`Coûts totaux: ${totals.couts.toFixed(2)} €`, 20, 88);
-      doc.text(`Profit net: ${totals.profit.toFixed(2)} €`, 20, 96);
+      doc.text(`Total encaissé: ${totals.total.toFixed(2)} DT`, 20, 80);
+      doc.text(`Coûts totaux: ${totals.couts.toFixed(2)} DT`, 20, 88);
+      doc.text(`Profit net: ${totals.profit.toFixed(2)} DT`, 20, 96);
       
       // Simple table data
       autoTable(doc, {
         startY: 108,
-        head: [['Date', 'Heure', 'Source', 'Montant (€)', 'Profit (€)']],
+        head: [['Date', 'Heure', 'Source', 'Montant (DT)', 'Profit (DT)']],
         body: rows.map(r => {
           const profit = Number(r.montant || 0) - Number(r.cout_total || 0);
           return [
@@ -184,7 +184,7 @@ function HistoriqueEncaisse() {
             <Card sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.dark' }}>
               <Typography variant="body2" color="text.secondary">Total Encaissé</Typography>
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                {totals.total.toFixed(2)} €
+                {totals.total.toFixed(2)} DT
               </Typography>
             </Card>
           </Grid>
@@ -192,7 +192,7 @@ function HistoriqueEncaisse() {
             <Card sx={{ p: 2, textAlign: 'center', bgcolor: 'warning.dark' }}>
               <Typography variant="body2" color="text.secondary">Coûts Totaux</Typography>
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
-                {totals.couts.toFixed(2)} €
+                {totals.couts.toFixed(2)} DT
               </Typography>
             </Card>
           </Grid>
@@ -207,7 +207,7 @@ function HistoriqueEncaisse() {
                 fontWeight: 'bold', 
                 color: totals.profit >= 0 ? 'success.main' : 'error.main' 
               }}>
-                {totals.profit.toFixed(2)} €
+                {totals.profit.toFixed(2)} DT
               </Typography>
             </Card>
           </Grid>
@@ -222,9 +222,9 @@ function HistoriqueEncaisse() {
                 <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Date</TableCell>
                 <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Ticket</TableCell>
                 <TableCell sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Source</TableCell>
-                <TableCell align="right" sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Montant (€)</TableCell>
-                <TableCell align="right" sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Coût (€)</TableCell>
-                <TableCell align="right" sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Profit (€)</TableCell>
+                <TableCell align="right" sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Montant (DT)</TableCell>
+                <TableCell align="right" sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Coût (DT)</TableCell>
+                <TableCell align="right" sx={{ bgcolor: 'background.paper', fontWeight: 'bold' }}>Profit (DT)</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

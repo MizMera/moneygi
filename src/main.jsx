@@ -16,6 +16,8 @@ import AdminSecurite from './AdminSecurite.jsx';
 import GestionEncaisse from './GestionEncaisse.jsx';
 import GestionDepenses from './GestionDepenses.jsx';
 import Transferts from './Transferts.jsx';
+import Clients from './Clients.jsx';
+import ClientDetail from './ClientDetail.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './global.css'
@@ -64,6 +66,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="depenses" element={<GestionDepenses />} />
             <Route path="transferts" element={<Transferts />} />
             <Route path="admin" element={<AdminSecurite />} />
+            <Route path="clients">
+              <Route index element={<Clients />} />
+              <Route path=":id" element={<ClientDetail />} />
+            </Route>
           </Route>
         </Routes>
         <ToastContainer position="bottom-right" autoClose={3500} hideProgressBar theme="dark" />

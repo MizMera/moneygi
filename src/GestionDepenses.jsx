@@ -253,19 +253,19 @@ function GestionDepenses() {
       doc.text('Résumé:', 14, 55);
       doc.setFontSize(11);
       doc.text(`Nombre de dépenses: ${depenses.length}`, 20, 65);
-      doc.text(`Total des dépenses: ${totals.total.toFixed(2)} €`, 20, 73);
+      doc.text(`Total des dépenses: ${totals.total.toFixed(2)} DT`, 20, 73);
       let yPos = 85;
       doc.text('Répartition par catégorie:', 20, yPos);
       yPos += 8;
       Object.entries(totals.byCategory).forEach(([cat, amount]) => {
         if (amount > 0) {
-          doc.text(`${cat}: ${amount.toFixed(2)} €`, 25, yPos);
+          doc.text(`${cat}: ${amount.toFixed(2)} DT`, 25, yPos);
           yPos += 6;
         }
       });
       autoTable(doc, {
         startY: yPos + 10,
-        head: [['Date', 'Catégorie', 'Description', 'Montant (€)']],
+        head: [['Date', 'Catégorie', 'Description', 'Montant (DT)']],
         body: depenses.map(d => [
           new Date(d.created_at).toLocaleDateString('fr-FR'),
           d.source || 'Général',
@@ -299,7 +299,7 @@ function GestionDepenses() {
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Ajouter une Dépense</Typography>
           <Box component="form" onSubmit={handleAddExpense}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
-              <TextField label="Montant (€)" type="number" value={newExpense.montant} onChange={(e) => setNewExpense({ ...newExpense, montant: e.target.value })} required inputProps={{ step: '0.01', min: '0' }} size="small" />
+      <TextField label="Montant (DT)" type="number" value={newExpense.montant} onChange={(e) => setNewExpense({ ...newExpense, montant: e.target.value })} required inputProps={{ step: '0.01', min: '0' }} size="small" />
               <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>Catégorie</InputLabel>
                 <Select value={newExpense.categorie} onChange={(e) => setNewExpense({ ...newExpense, categorie: e.target.value })} label="Catégorie">
@@ -339,7 +339,7 @@ function GestionDepenses() {
             <Card sx={{ p: 2, textAlign: 'center', bgcolor: 'error.dark' }}>
               <TrendingDown sx={{ fontSize: 40, color: 'error.main', mb: 1 }} />
               <Typography variant="body2" color="text.secondary">Total Dépenses</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.main' }}>{totals.total.toFixed(2)} €</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.main' }}>{totals.total.toFixed(2)} DT</Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
@@ -352,8 +352,8 @@ function GestionDepenses() {
           <Grid item xs={12} md={4}>
             <Card sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">Moyenne par Dépense</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                {depenses.length > 0 ? (totals.total / depenses.length).toFixed(2) : '0.00'} €
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                {depenses.length > 0 ? (totals.total / depenses.length).toFixed(2) : '0.00'} DT
               </Typography>
             </Card>
           </Grid>
@@ -366,7 +366,7 @@ function GestionDepenses() {
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           {Object.entries(totals.byCategory).map(([cat, amount]) => (
             amount > 0 && (
-              <Chip key={cat} label={`${cat}: ${amount.toFixed(2)} €`} variant="outlined" color="primary" />
+          <Chip key={cat} label={`${cat}: ${amount.toFixed(2)} DT`} variant="outlined" color="primary" />
             )
           ))}
         </Stack>
@@ -386,7 +386,7 @@ function GestionDepenses() {
                 <TableCell sx={{ fontWeight: 'bold', width: '10%' }}>Portefeuille</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', width: '12%' }}>Catégorie</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', width: '33%' }}>Description</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', width: '12%' }}>Montant (€)</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', width: '12%' }}>Montant (DT)</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', width: '10%' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -462,7 +462,7 @@ function GestionDepenses() {
               {depenses.length > 0 && (
                 <TableRow sx={{ bgcolor: 'rgba(244, 67, 54, 0.05)' }}>
                   <TableCell colSpan={4} align="right" sx={{ fontWeight: 700 }}>Total des Dépenses</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, color: 'error.main' }}>{totals.total.toFixed(2)} €</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700, color: 'error.main' }}>{totals.total.toFixed(2)} DT</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               )}
@@ -486,7 +486,7 @@ function GestionDepenses() {
               <Typography variant="body2"><strong>ID:</strong> #{deleteDialog.expense.id}</Typography>
               <Typography variant="body2"><strong>Date:</strong> {fmtDateTime(deleteDialog.expense.created_at)}</Typography>
               <Typography variant="body2"><strong>Catégorie:</strong> {deleteDialog.expense.source || 'Général'}</Typography>
-              <Typography variant="body2"><strong>Montant:</strong> {Number(deleteDialog.expense.montant).toFixed(2)} €</Typography>
+              <Typography variant="body2"><strong>Montant:</strong> {Number(deleteDialog.expense.montant).toFixed(2)} DT</Typography>
               <Typography variant="body2"><strong>Description:</strong> {deleteDialog.expense.description || '—'}</Typography>
             </Box>
           )}

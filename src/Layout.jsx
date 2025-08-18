@@ -33,6 +33,7 @@ import {
   Search,
   NotificationsNone
 } from '@mui/icons-material';
+import GroupIcon from '@mui/icons-material/Group';
 
 // widths for mini-variant drawer
 const drawerWidth = 260; // expanded width
@@ -46,6 +47,7 @@ const menuItems = [
   { text: 'Gestion Encaisse', path: '/gestion-encaisse', icon: <POSIcon /> },
   { text: 'Dépenses', path: '/depenses', icon: <RepairIcon /> },
   { text: 'Transferts', path: '/transferts', icon: <POSIcon /> },
+  { text: 'Clients', path: '/clients', icon: <GroupIcon /> },
   { text: 'Administration', path: '/admin', icon: <AccountCircle /> }
 ];
 
@@ -89,7 +91,7 @@ function Layout() {
     <div>
       <Toolbar>
         <Typography className="app-title" variant="h6" noWrap component="div" sx={{ color: '#E5E7EB', fontWeight: '800' }}>
-          Clear Management
+          Mizania+
         </Typography>
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(148,163,184,0.12)' }} />

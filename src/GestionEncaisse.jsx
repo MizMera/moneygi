@@ -256,7 +256,7 @@ function GestionEncaisse() {
         type: 'Cloture',
         source: 'Caisse',
         montant: totals.caisseTheorique,
-        description: `Clôture du ${date} | Net: ${totals.netCaisse.toFixed(2)} €`,
+        description: `Clôture du ${date} | Net: ${totals.netCaisse.toFixed(2)} DT`,
         user_id: user?.id || null
       });
       toast.success('Clôture enregistrée.');
@@ -296,25 +296,25 @@ function GestionEncaisse() {
       doc.setFontSize(11);
       let yPos = viewMode === 'daily' ? 65 : 72;
       if (viewMode === 'daily') {
-        doc.text(`Fond de caisse initial: ${Number(fondCaisse).toFixed(2)} €`, 20, yPos);
+        doc.text(`Fond de caisse initial: ${Number(fondCaisse).toFixed(2)} DT`, 20, yPos);
         yPos += 8;
       }
       doc.text(`Nombre de transactions: ${transactions.length}`, 20, yPos);
-      doc.text(`Total encaissé: ${totals.total.toFixed(2)} €`, 20, yPos + 8);
-      doc.text(`Coûts totaux: ${totals.couts.toFixed(2)} €`, 20, yPos + 16);
-      doc.text(`Profit net: ${totals.profit.toFixed(2)} €`, 20, yPos + 24);
+      doc.text(`Total encaissé: ${totals.total.toFixed(2)} DT`, 20, yPos + 8);
+      doc.text(`Coûts totaux: ${totals.couts.toFixed(2)} DT`, 20, yPos + 16);
+      doc.text(`Profit net: ${totals.profit.toFixed(2)} DT`, 20, yPos + 24);
       
       if (viewMode === 'daily') {
-        doc.text(`Total dépenses: ${totals.totalDepenses.toFixed(2)} €`, 20, yPos + 32);
-        doc.text(`Caisse théorique: ${totals.caisseTheorique.toFixed(2)} €`, 20, yPos + 40);
-        doc.text(`Bénéfice net caisse: ${totals.netCaisse.toFixed(2)} €`, 20, yPos + 48);
+        doc.text(`Total dépenses: ${totals.totalDepenses.toFixed(2)} DT`, 20, yPos + 32);
+        doc.text(`Caisse théorique: ${totals.caisseTheorique.toFixed(2)} DT`, 20, yPos + 40);
+        doc.text(`Bénéfice net caisse: ${totals.netCaisse.toFixed(2)} DT`, 20, yPos + 48);
       }
       
       // Transactions table
       const tableStartY = viewMode === 'daily' ? yPos + 60 : yPos + 40;
       autoTable(doc, {
         startY: tableStartY,
-        head: [['Date/Heure', 'Source', 'Montant (€)', 'Coût (€)', 'Profit (€)']],
+        head: [['Date/Heure', 'Source', 'Montant (DT)', 'Coût (DT)', 'Profit (DT)']],
         body: transactions.map(r => {
           const profit = Number(r.montant || 0) - Number(r.cout_total || 0);
           return [
@@ -396,7 +396,7 @@ function GestionEncaisse() {
                   size="small"
                 />
                 <TextField 
-                  label="Fond de caisse début (€)" 
+                  label="Fond de caisse début (DT)" 
                   type="number" 
                   inputProps={{ step: '0.01' }} 
                   value={fondCaisse} 
@@ -486,7 +486,7 @@ function GestionEncaisse() {
             <Card sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.dark' }}>
               <Typography variant="body2" color="text.secondary">Total Encaissé</Typography>
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                {totals.total.toFixed(2)} €
+                {totals.total.toFixed(2)} DT
               </Typography>
             </Card>
           </Grid>
@@ -494,7 +494,7 @@ function GestionEncaisse() {
             <Card sx={{ p: 2, textAlign: 'center', bgcolor: 'warning.dark' }}>
               <Typography variant="body2" color="text.secondary">Coûts Totaux</Typography>
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
-                {totals.couts.toFixed(2)} €
+                {totals.couts.toFixed(2)} DT
               </Typography>
             </Card>
           </Grid>
@@ -511,7 +511,7 @@ function GestionEncaisse() {
                 fontWeight: 'bold', 
                 color: totals.profit >= 0 ? 'success.main' : 'error.main' 
               }}>
-                {totals.profit.toFixed(2)} €
+                {totals.profit.toFixed(2)} DT
               </Typography>
             </Card>
           </Grid>
@@ -527,7 +527,7 @@ function GestionEncaisse() {
                   fontWeight: 'bold', 
                   color: totals.netCaisse >= 0 ? 'success.main' : 'error.main' 
                 }}>
-                  {totals.caisseTheorique.toFixed(2)} €
+                  {totals.caisseTheorique.toFixed(2)} DT
                 </Typography>
               </Card>
             </Grid>
@@ -569,9 +569,9 @@ function GestionEncaisse() {
                   <TableCell sx={{ fontWeight: 'bold', width: '20%' }}>Articles</TableCell>
                 )}
                 <TableCell sx={{ fontWeight: 'bold', width: viewMode === 'daily' ? '15%' : '25%' }}>Description</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Montant (€)</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Coût (€)</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Marge (€)</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Montant (DT)</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Coût (DT)</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', width: '8%' }}>Marge (DT)</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', width: '6%' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -755,7 +755,7 @@ function GestionEncaisse() {
             <Box>
               <Typography variant="body2"><strong>ID:</strong> #{deleteDialog.transaction.id}</Typography>
               <Typography variant="body2"><strong>Date:</strong> {fmtDateTime(deleteDialog.transaction.created_at)}</Typography>
-              <Typography variant="body2"><strong>Montant:</strong> {Number(deleteDialog.transaction.montant).toFixed(2)} €</Typography>
+              <Typography variant="body2"><strong>Montant:</strong> {Number(deleteDialog.transaction.montant).toFixed(2)} DT</Typography>
               <Typography variant="body2"><strong>Description:</strong> {deleteDialog.transaction.description || '—'}</Typography>
             </Box>
           )}

@@ -119,13 +119,13 @@ function Dashboard() {
     const yesterdayComparison = stats.revenusJour - stats.revenusHier;
     const yesterdayPercent = stats.revenusHier > 0 ? ((yesterdayComparison / stats.revenusHier) * 100) : 0;
     
-    doc.text(`Revenus aujourd'hui: ${stats.revenusJour.toFixed(2)} €`, 20, 68);
-    doc.text(`Revenus hier: ${stats.revenusHier.toFixed(2)} €`, 20, 76);
-    doc.text(`Variation vs hier: ${yesterdayComparison >= 0 ? '+' : ''}${yesterdayComparison.toFixed(2)} € (${yesterdayPercent >= 0 ? '+' : ''}${yesterdayPercent.toFixed(1)}%)`, 20, 84);
-    doc.text(`Coûts du jour: ${stats.coutsJour.toFixed(2)} €`, 20, 92);
-    doc.text(`Profit net: ${profit.toFixed(2)} €`, 20, 100);
+    doc.text(`Revenus aujourd'hui: ${stats.revenusJour.toFixed(2)} DT`, 20, 68);
+    doc.text(`Revenus hier: ${stats.revenusHier.toFixed(2)} DT`, 20, 76);
+    doc.text(`Variation vs hier: ${yesterdayComparison >= 0 ? '+' : ''}${yesterdayComparison.toFixed(2)} DT (${yesterdayPercent >= 0 ? '+' : ''}${yesterdayPercent.toFixed(1)}%)`, 20, 84);
+    doc.text(`Coûts du jour: ${stats.coutsJour.toFixed(2)} DT`, 20, 92);
+    doc.text(`Profit net: ${profit.toFixed(2)} DT`, 20, 100);
     doc.text(`Marge: ${margin.toFixed(1)}%`, 20, 108);
-    doc.text(`Dépenses du jour: ${stats.depensesJour.toFixed(2)} €`, 20, 116);
+    doc.text(`Dépenses du jour: ${stats.depensesJour.toFixed(2)} DT`, 20, 116);
     
     doc.setFontSize(14);
     doc.text('État des Opérations:', 14, 134);
@@ -142,9 +142,9 @@ function Dashboard() {
       // Simple table with daily revenues
       const tableData = graphData.slice(-7).map(day => [
         day.date,
-        `${day.revenus.toFixed(2)} €`,
-        `${day.depenses.toFixed(2)} €`,
-        `${(day.revenus - day.depenses).toFixed(2)} €`
+        `${day.revenus.toFixed(2)} DT`,
+        `${day.depenses.toFixed(2)} DT`,
+        `${(day.revenus - day.depenses).toFixed(2)} DT`
       ]);
       autoTable(doc, {
         startY: 186,
@@ -360,10 +360,10 @@ function Dashboard() {
               }}
             >
               {typeof value === 'number' ? value.toLocaleString('fr-FR', {
-                minimumFractionDigits: title.includes('€') || title.includes('CA') || title.includes('Revenus') || title.includes('Bénéfice') ? 2 : 0,
-                maximumFractionDigits: title.includes('€') || title.includes('CA') || title.includes('Revenus') || title.includes('Bénéfice') ? 2 : 0
+                minimumFractionDigits: title.includes('DT') || title.includes('CA') || title.includes('Revenus') || title.includes('Bénéfice') ? 2 : 0,
+                maximumFractionDigits: title.includes('DT') || title.includes('CA') || title.includes('Revenus') || title.includes('Bénéfice') ? 2 : 0
               }) : value}
-              {(title.includes('Revenus') || title.includes('Dépenses') || title.includes('Coûts') || title.includes('Bénéfice') || title.includes('CA')) && ' €'}
+              {(title.includes('Revenus') || title.includes('Dépenses') || title.includes('Coûts') || title.includes('Bénéfice') || title.includes('CA')) && ' DT'}
             </Typography>
             {subtitle && (
               <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -454,10 +454,10 @@ function Dashboard() {
       doc.text('Résumé Financier', 14, 45);
       
       const summaryData = [
-        ['Revenus Aujourd\'hui', `${stats.revenusJour.toFixed(2)} €`],
-        ['Coûts des Ventes', `${stats.coutsJour.toFixed(2)} €`],
-        ['Dépenses', `${stats.depensesJour.toFixed(2)} €`],
-        ['Bénéfice Net', `${(stats.revenusJour - stats.coutsJour - stats.depensesJour).toFixed(2)} €`],
+        ['Revenus Aujourd\'hui', `${stats.revenusJour.toFixed(2)} DT`],
+        ['Coûts des Ventes', `${stats.coutsJour.toFixed(2)} DT`],
+        ['Dépenses', `${stats.depensesJour.toFixed(2)} DT`],
+        ['Bénéfice Net', `${(stats.revenusJour - stats.coutsJour - stats.depensesJour).toFixed(2)} DT`],
         ['Ventes Réalisées', stats.ventesJour.toString()],
         ['Réparations en Cours', stats.reparationsEnCours.toString()],
         ['Stock Faible', stats.stockFaible.toString()]
@@ -591,7 +591,7 @@ function Dashboard() {
           <StatCard 
             title="CA du Mois" 
             value={stats.caMois} 
-            subtitle="objectif: 25,000 €"
+            subtitle="objectif: 25,000 DT"
             icon={<TrendingUp />} 
             color="#8B5CF6"
             percentage={78}
@@ -617,7 +617,7 @@ function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#64748B" />
                 <YAxis tick={{ fontSize: 12 }} stroke="#64748B" />
-                <Tooltip formatter={(value) => [`${value.toFixed(2)} €`, 'Net']} />
+                <Tooltip formatter={(value) => [`${value.toFixed(2)} DT`, 'Net']} />
                 <Legend verticalAlign="top" height={36} />
                 <Line type="monotone" dataKey="net" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Net" />
               </LineChart>
@@ -698,7 +698,7 @@ function Dashboard() {
                             {wallet}
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            {balance.toFixed(2)} €
+                            {balance.toFixed(2)} DT
                           </Typography>
                         </Box>
                         <Avatar sx={{ bgcolor: colors[wallet], width: 32, height: 32 }}>
@@ -830,7 +830,7 @@ function Dashboard() {
                       <TableCell>{tx.wallet || '-'}</TableCell>
                       <TableCell>{tx.type}</TableCell>
                       <TableCell align="right" sx={{ color: tx.type === 'Revenu' ? '#10B981' : '#EF4444', fontWeight: 1000 }}>
-                        {tx.type === 'Revenu' ? '+' : '-'}{Number(tx.montant).toFixed(2)} €
+                        {tx.type === 'Revenu' ? '+' : '-'}{Number(tx.montant).toFixed(2)} DT
                       </TableCell>
                     </TableRow>
                   ))}

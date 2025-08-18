@@ -218,7 +218,7 @@ function VuePDV() {
         await Promise.all(misesAJourStock);
       }
 
-      toast.success(`Vente ${ticketNo} de ${totalVente.toFixed(2)} € enregistrée !`);
+      toast.success(`Vente ${ticketNo} de ${totalVente.toFixed(2)} DT enregistrée !`);
       setPanier([]);
     } catch (error) {
       toast.error("Erreur lors de l'encaissement: " + error.message);
@@ -258,9 +258,9 @@ function VuePDV() {
       // Items table
       const tableData = panier.map(i => [
         i.nom || i.description || i.sku || i.id,
-        `${Number(i.prix_vente).toFixed(2)} €`,
+        `${Number(i.prix_vente).toFixed(2)} DT`,
         String(i.quantite),
-        `${(Number(i.prix_vente) * Number(i.quantite)).toFixed(2)} €`
+        `${(Number(i.prix_vente) * Number(i.quantite)).toFixed(2)} DT`
       ]);
       autoTable(doc, {
         startY: 54,
@@ -271,7 +271,7 @@ function VuePDV() {
       
       // Total
       const finalY = doc.lastAutoTable.finalY || 50;
-      doc.text(`Total: ${calculerTotal()} €`, 14, finalY + 8);
+      doc.text(`Total: ${calculerTotal()} DT`, 14, finalY + 8);
       
       console.log('Table created, saving ticket...');
       
@@ -345,7 +345,7 @@ function VuePDV() {
                 <Grid container spacing={1}>
                   {produitsFiltres.map((p) => (
                     <Grid item xs={6} sm={4} md={3} lg={2} key={p.id}>
-                      <Button
+                        <Button
                         variant="outlined"
                         onClick={() => ajouterAuPanier(p)}
                         fullWidth
@@ -357,7 +357,7 @@ function VuePDV() {
                         }}
                       >
                         <span style={{ textAlign: 'center', fontWeight: 'bold' }}>{p.nom}</span>
-                        <span style={{ color: '#10B981' }}>{Number(p.prix_vente).toFixed(2)} €</span>
+                        <span style={{ color: '#10B981' }}>{Number(p.prix_vente).toFixed(2)} DT</span>
                       </Button>
                     </Grid>
                   ))}
@@ -382,7 +382,7 @@ function VuePDV() {
                             }}
                           >
                             <span style={{ textAlign: 'center', fontWeight: 'bold' }}>{s.nom}</span>
-                            <span style={{ color: '#10B981' }}>{Number(s.prix_vente).toFixed(2)} €</span>
+                            <span style={{ color: '#10B981' }}>{Number(s.prix_vente).toFixed(2)} DT</span>
                           </Button>
                         </Grid>
                       ))
@@ -405,7 +405,7 @@ function VuePDV() {
                       fullWidth 
                     />
                     <TextField 
-                      label="Prix (€)" 
+                      label="Prix (DT)" 
                       type="number" 
                       inputProps={{ step: '0.01' }} 
                       value={customService.prix} 
@@ -453,9 +453,9 @@ function VuePDV() {
                 <TableHead>
                   <TableRow>
                     <TableCell>Article</TableCell>
-                    <TableCell align="right">PU (€)</TableCell>
+                    <TableCell align="right">PU (DT)</TableCell>
                     <TableCell align="center">Qté</TableCell>
-                    <TableCell align="right">Total (€)</TableCell>
+                    <TableCell align="right">Total (DT)</TableCell>
                     <TableCell align="center">Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -507,7 +507,7 @@ function VuePDV() {
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
                 <Typography variant="h6" color="text.secondary">Total</Typography>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                  {calculerTotal()} €
+                  {calculerTotal()} DT
                 </Typography>
               </Stack>
 
